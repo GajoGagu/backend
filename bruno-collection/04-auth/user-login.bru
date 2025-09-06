@@ -1,0 +1,34 @@
+meta {
+  name: 사용자 로그인
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8001/auth/users/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "test@example.com",
+    "password": "password123"
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains user and tokens", function() {
+    expect(res.getBody()).to.have.property('user');
+    expect(res.getBody()).to.have.property('tokens');
+    expect(res.getBody().tokens).to.have.property('access_token');
+  });
+  
+  test("Save access token for later use", function() {
+    bru.setVar("access_token", res.getBody().tokens.access_token);
+  });
+}

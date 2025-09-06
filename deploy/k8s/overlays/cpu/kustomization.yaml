@@ -1,0 +1,8 @@
+nameSuffix: -crud
+resources: [../../base]
+images:
+  - name: ghcr.io/ORG/myapp-crud
+    newName: ghcr.io/ORG/myapp-crud
+    newTag: latest
+patches:
+  - path: patch.yaml

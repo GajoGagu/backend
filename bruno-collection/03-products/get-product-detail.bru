@@ -1,0 +1,25 @@
+meta {
+  name: 제품 상세 조회
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8001/products/prod1
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Product has required fields", function() {
+    const product = res.getBody();
+    expect(product).to.have.property('id', 'prod1');
+    expect(product).to.have.property('title');
+    expect(product).to.have.property('price');
+    expect(product).to.have.property('category');
+  });
+}

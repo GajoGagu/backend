@@ -1,0 +1,28 @@
+meta {
+  name: 카테고리 목록 조회
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8001/categories
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is an array", function() {
+    expect(res.getBody()).to.be.an('array');
+  });
+  
+  test("Contains sample categories", function() {
+    const categories = res.getBody();
+    expect(categories).to.have.length.greaterThan(0);
+    expect(categories[0]).to.have.property('id');
+    expect(categories[0]).to.have.property('name');
+  });
+}

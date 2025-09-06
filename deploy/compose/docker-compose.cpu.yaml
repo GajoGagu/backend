@@ -1,0 +1,9 @@
+services:
+  crud:
+    build:
+      context: ../..
+      dockerfile: docker/crud.Dockerfile
+    image: ghcr.io/ORG/myapp-crud:latest
+    ports: ["8001:8000"]
+    environment:
+      - LOG_LEVEL=INFO

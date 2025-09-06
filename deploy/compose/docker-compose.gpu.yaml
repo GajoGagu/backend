@@ -1,0 +1,13 @@
+services:
+  dl:
+    build:
+      context: ../..
+      dockerfile: docker/dl.Dockerfile
+    image: ghcr.io/ORG/myapp-dl:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+    runtime: nvidia
+    ports: ["8002:8000"]

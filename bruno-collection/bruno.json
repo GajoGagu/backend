@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "가져가구",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

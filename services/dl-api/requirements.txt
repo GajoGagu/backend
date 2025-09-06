@@ -1,0 +1,4 @@
+fastapi==0.115.*
+uvicorn[standard]==0.30.*
+pydantic==2.*
+# Install torch/onnxruntime-gpu as needed in Dockerfile for GPU images.

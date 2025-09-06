@@ -1,0 +1,36 @@
+meta {
+  name: 사용자 회원가입
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:8001/auth/users/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "test@example.com",
+    "password": "password123",
+    "name": "테스트 사용자",
+    "phone": "010-1234-5678"
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response contains user and tokens", function() {
+    expect(res.getBody()).to.have.property('user');
+    expect(res.getBody()).to.have.property('tokens');
+    expect(res.getBody().tokens).to.have.property('access_token');
+  });
+  
+  test("Save access token for later use", function() {
+    bru.setVar("access_token", res.getBody().tokens.access_token);
+  });
+}
