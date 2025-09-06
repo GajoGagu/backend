@@ -4,3 +4,7 @@ pydantic==2.*
 python-jose[cryptography]==3.*
 passlib[bcrypt]==1.*
 python-multipart==0.*
+sqlalchemy==2.*
+psycopg2-binary==2.*
+alembic==1.*
+python-dotenv==1.*
