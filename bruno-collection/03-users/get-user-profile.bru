@@ -1,0 +1,27 @@
+meta {
+  name: Get User Profile
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8000/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has user profile", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody().email).to.be.a('string');
+    expect(res.getBody().name).to.be.a('string');
+  });
+}

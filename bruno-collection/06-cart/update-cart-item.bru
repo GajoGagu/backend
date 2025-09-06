@@ -1,0 +1,32 @@
+meta {
+  name: Update Cart Item
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:8000/cart/items/{{cart_item_id}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "quantity": 2
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has updated cart item", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody().quantity).to.equal(2);
+  });
+}

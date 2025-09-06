@@ -1,0 +1,36 @@
+meta {
+  name: Add to Wishlist
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8000/wishlist/items
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "product_id": "{{product_id}}"
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response has wishlist item data", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody().product_id).to.equal("{{product_id}}");
+  });
+  
+  test("Save wishlist item ID for later use", function() {
+    bru.setVar("wishlist_item_id", res.getBody().id);
+  });
+}

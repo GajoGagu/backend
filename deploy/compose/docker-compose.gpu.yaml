@@ -1,4 +1,33 @@
 services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: gajogagu_db
+      POSTGRES_USER: gajogagu
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gajogagu -d gajogagu_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  crud:
+    build:
+      context: ../..
+      dockerfile: docker/crud.Dockerfile
+    image: ghcr.io/gajogagu/myapp-crud:latest
+    ports: ["8001:8000"]
+    environment:
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://gajogagu:password@postgres:5432/gajogagu_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   dl:
     build:
       context: ../..
@@ -11,3 +40,6 @@ services:
             - capabilities: ["gpu"]
     runtime: nvidia
     ports: ["8002:8000"]
+
+volumes:
+  postgres_data:

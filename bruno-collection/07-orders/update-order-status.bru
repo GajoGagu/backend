@@ -1,0 +1,32 @@
+meta {
+  name: Update Order Status
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:8000/orders/{{order_id}}/status
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "status": "confirmed"
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has updated order", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody().status).to.equal("confirmed");
+  });
+}

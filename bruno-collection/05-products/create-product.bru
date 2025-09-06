@@ -1,0 +1,55 @@
+meta {
+  name: Create Product
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8000/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "title": "모던 원목 침대",
+    "description": "자연스러운 원목으로 제작된 모던한 디자인의 침대입니다.",
+    "price_currency": "KRW",
+    "price_amount": 500000,
+    "images": [
+      "https://example.com/bed1.jpg",
+      "https://example.com/bed2.jpg"
+    ],
+    "category_id": "{{category_id}}",
+    "location": {
+      "address": "서울시 강남구",
+      "latitude": 37.5665,
+      "longitude": 126.9780
+    },
+    "attributes": {
+      "material": "원목",
+      "color": "내추럴",
+      "size": "퀸사이즈"
+    }
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response has product data", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody().title).to.equal("모던 원목 침대");
+    expect(res.getBody().price_amount).to.equal(500000);
+  });
+  
+  test("Save product ID for later use", function() {
+    bru.setVar("product_id", res.getBody().id);
+  });
+}

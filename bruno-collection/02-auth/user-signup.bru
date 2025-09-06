@@ -1,11 +1,11 @@
 meta {
-  name: 사용자 로그인
+  name: 사용자 회원가입
   type: http
-  seq: 6
+  seq: 1
 }
 
 post {
-  url: http://localhost:8000/auth/users/login
+  url: {{base_url}}/auth/users/signup
   body: json
   auth: none
 }
@@ -13,13 +13,15 @@ post {
 body:json {
   {
     "email": "test@example.com",
-    "password": "password123"
+    "password": "password123",
+    "name": "테스트 사용자",
+    "phone": "010-1234-5678"
   }
 }
 
 tests {
-  test("Status code is 200", function() {
-    expect(res.getStatus()).to.equal(200);
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
   });
   
   test("Response contains user and tokens", function() {

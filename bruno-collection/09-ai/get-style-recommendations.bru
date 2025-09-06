@@ -1,0 +1,51 @@
+meta {
+  name: Get Style Recommendations
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8000/ai/style-match
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "style_preference": "모던",
+    "budget_range": {
+      "min": 100000,
+      "max": 1000000
+    },
+    "room_type": "침실",
+    "existing_items": [
+      {
+        "product_id": "{{product_id}}",
+        "style": "모던"
+      }
+    ]
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has recommendations", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody()).to.have.property('recommendations');
+    expect(res.getBody().recommendations).to.be.an('array');
+  });
+  
+  test("Recommendations have product details", function() {
+    if (res.getBody().recommendations.length > 0) {
+      expect(res.getBody().recommendations[0]).to.have.property('product');
+      expect(res.getBody().recommendations[0]).to.have.property('match_score');
+    }
+  });
+}
