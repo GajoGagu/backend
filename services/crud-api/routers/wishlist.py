@@ -1,8 +1,8 @@
 from typing import Dict, Any
 from fastapi import APIRouter, HTTPException, Depends
-from ..models import Product
-from ..database import wishlist_db, products_db
-from ..auth import get_current_user
+from models import Product
+from database import wishlist_db, products_db
+from auth import get_current_user
 
 router = APIRouter(prefix="/wishlist", tags=["wishlist"])
 

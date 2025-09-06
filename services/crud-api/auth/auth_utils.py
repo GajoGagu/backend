@@ -3,7 +3,7 @@ import secrets
 from datetime import datetime
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from ..database import active_tokens
+from database import active_tokens
 
 security = HTTPBearer()
 

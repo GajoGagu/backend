@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Depends
-from ..models import SignupRequest, LoginRequest, AuthResponse, User, Tokens
-from ..database import users_db, riders_db, active_tokens
-from ..auth import hash_password, generate_token
+from models import SignupRequest, LoginRequest, AuthResponse, User, Tokens
+from database import users_db, riders_db, active_tokens
+from auth import hash_password, generate_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

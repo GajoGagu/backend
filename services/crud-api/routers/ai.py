@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter
-from ..models import AIStyleMatchRequest, AIStyleMatchResult, AIMatch, Product
-from ..database import products_db
+from models import AIStyleMatchRequest, AIStyleMatchResult, AIMatch, Product
+from database import products_db
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 

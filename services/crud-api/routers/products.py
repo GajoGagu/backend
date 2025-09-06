@@ -2,9 +2,9 @@ import uuid
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends
-from ..models import Product, ProductCreate
-from ..database import products_db, categories_db
-from ..auth import get_current_user
+from models import Product, ProductCreate
+from database import products_db, categories_db
+from auth import get_current_user
 
 router = APIRouter(prefix="/products", tags=["products"])
 

@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter
-from ..models import Category
-from ..database import categories_db
+from models import Category
+from database import categories_db
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 

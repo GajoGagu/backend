@@ -1,8 +1,8 @@
 import uuid
 from fastapi import APIRouter, HTTPException, Depends
-from ..models import Cart, CartItem, Money, Product
-from ..database import cart_db, products_db
-from ..auth import get_current_user
+from models import Cart, CartItem, Money, Product
+from database import cart_db, products_db
+from auth import get_current_user
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 
