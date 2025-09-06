@@ -1,8 +1,8 @@
-# 가구 마켓플레이스 API (Furniture Marketplace API)
-Two FastAPI services in one monorepo: Marketplace API and DL Inference API. Build CPU/GPU images, run via Compose or Kustomize.
+# 가져가구 API (Gajogagu API)
+Two FastAPI services in one monorepo: CRUD API and DL Inference API. Build CPU/GPU images, run via Compose or Kustomize.
 
 ## Services
-- **Marketplace API** (`services/crud-api/`) - Korean furniture marketplace with user/rider auth, products, cart, orders, AI recommendations
+- **CRUD API** (`services/crud-api/`) - Korean furniture marketplace with user/rider auth, products, cart, orders, AI recommendations
 - **DL API** (`services/dl-api/`) - Deep learning inference service with async processing  
 
 ## Local (Compose)
@@ -10,7 +10,7 @@ Two FastAPI services in one monorepo: Marketplace API and DL Inference API. Buil
 - GPU: `docker compose -f deploy/compose/docker-compose.gpu.yaml up --build`
 
 ## Service Ports
-- Marketplace API: http://localhost:8001
+- CRUD API: http://localhost:8001
 - DL API: http://localhost:8002  
 
 ## Kubernetes (Kustomize)
@@ -18,10 +18,10 @@ Two FastAPI services in one monorepo: Marketplace API and DL Inference API. Buil
 - DL:   `kubectl apply -k deploy/k8s/overlays/gpu`
 
 ## Images
-- ghcr.io/ORG/myapp-crud:latest (Marketplace API)
-- ghcr.io/ORG/myapp-dl:latest
+- ghcr.io/gajogagu/myapp-crud:latest (CRUD API)
+- ghcr.io/gajogagu/myapp-dl:latest
 
-## Marketplace API Features
+## CRUD API Features
 - **Authentication**: Separate user/rider accounts with JWT tokens
 - **Social Login**: Google/Kakao OAuth integration
 - **Products**: Furniture catalog with categories, search, filters

@@ -13,7 +13,7 @@ spec:
           effect: "NoSchedule"
       containers:
         - name: app
-          image: ghcr.io/ORG/myapp-dl:latest
+          image: ghcr.io/gajogagu/myapp-dl:latest
           resources:
             limits:
               nvidia.com/gpu: "1"

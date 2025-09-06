@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: ghcr.io/ORG/myapp-crud:latest
+          image: ghcr.io/gajogagu/myapp-crud:latest
           ports: [{ containerPort: 8000 }]
           readinessProbe: { httpGet: { path: /readyz, port: 8000 }, initialDelaySeconds: 2 }
           livenessProbe:  { httpGet: { path: /healthz, port: 8000 }, initialDelaySeconds: 2 }

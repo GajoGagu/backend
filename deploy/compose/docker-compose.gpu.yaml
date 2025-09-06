@@ -3,7 +3,7 @@ services:
     build:
       context: ../..
       dockerfile: docker/dl.Dockerfile
-    image: ghcr.io/ORG/myapp-dl:latest
+    image: ghcr.io/gajogagu/myapp-dl:latest
     deploy:
       resources:
         reservations:
