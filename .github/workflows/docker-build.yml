@@ -17,12 +17,12 @@ jobs:
         include:
           - name: crud
             dockerfile: docker/crud.Dockerfile
-            image: ghcr.io/ORG/myapp-crud:latest
+            image: ghcr.io/gajogagu/myapp-crud:latest
             context: .
             pathFilter: 'services/crud-api/**'
           - name: dl
             dockerfile: docker/dl.Dockerfile
-            image: ghcr.io/ORG/myapp-dl:latest
+            image: ghcr.io/gajogagu/myapp-dl:latest
             context: .
             pathFilter: 'services/dl-api/**'
     steps:
