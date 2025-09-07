@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: http://localhost:8000/products
+  url: {{base_url}}/products
   body: none
   auth: none
 }
@@ -15,7 +15,8 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
   
-  test("Response is an array", function() {
-    expect(res.getBody()).to.be.an('array');
+  test("Response shape", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody()).to.have.property('items');
   });
 }

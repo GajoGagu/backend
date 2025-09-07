@@ -4,8 +4,8 @@ meta {
   seq: 4
 }
 
-delete {
-  url: http://localhost:8000/cart/items/{{cart_item_id}}
+post {
+  url: {{base_url}}/cart/clear
   body: none
   auth: bearer
 }

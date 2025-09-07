@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: http://localhost:8000/products
+  url: {{base_url}}/products
   body: json
   auth: bearer
 }
@@ -18,18 +18,9 @@ body:json {
   {
     "title": "모던 원목 침대",
     "description": "자연스러운 원목으로 제작된 모던한 디자인의 침대입니다.",
-    "price_currency": "KRW",
-    "price_amount": 500000,
-    "images": [
-      "https://example.com/bed1.jpg",
-      "https://example.com/bed2.jpg"
-    ],
+    "price": {"currency": "KRW", "amount": 500000},
     "category_id": "{{category_id}}",
-    "location": {
-      "address": "서울시 강남구",
-      "latitude": 37.5665,
-      "longitude": 126.9780
-    },
+    "location": {"postcode":"12345","line1":"서울시 강남구"},
     "attributes": {
       "material": "원목",
       "color": "내추럴",
@@ -46,7 +37,7 @@ tests {
   test("Response has product data", function() {
     expect(res.getBody()).to.be.an('object');
     expect(res.getBody().title).to.equal("모던 원목 침대");
-    expect(res.getBody().price_amount).to.equal(500000);
+    expect(res.getBody().price.amount).to.equal(500000);
   });
   
   test("Save product ID for later use", function() {

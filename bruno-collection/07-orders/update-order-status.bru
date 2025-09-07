@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: http://localhost:8000/orders/{{order_id}}/status
+  url: {{base_url}}/orders/{{order_id}}/status
   body: json
   auth: bearer
 }

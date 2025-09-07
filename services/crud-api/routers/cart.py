@@ -1,39 +1,60 @@
 import uuid
 from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 from models import Cart, CartItem, Money, Product
-from database import cart_db, products_db
+from database.config import get_db
+from database.service import DatabaseService
 from auth import get_current_user
+from pydantic import BaseModel
+class AddToCartRequest(BaseModel):
+    product_id: str
+    quantity: int = 1
+
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 
 
 @router.get("", response_model=Cart)
-def get_cart(current_user: dict = Depends(get_current_user)):
-    user_id = current_user["id"]
-    cart_data = cart_db.get(user_id, {"items": []})
-    
+def get_cart(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    service = DatabaseService(db)
+    cart_items = service.get_user_cart(current_user["id"]) or []
+
     items = []
     subtotal = 0
-    
-    for item in cart_data["items"]:
-        if item["product_id"] in products_db:
-            product = Product(**products_db[item["product_id"]])
-            line_total = product.price.amount * item["quantity"]
-            subtotal += line_total
-            
-            items.append(CartItem(
-                item_id=item["item_id"],
-                product=product,
-                quantity=item["quantity"],
-                unit_price=product.price,
-                line_total=Money(currency="KRW", amount=line_total)
-            ))
-    
-    # Apply 5,000 shipping fee for empty cart and when subtotal below threshold
-    shipping_fee_amount = 5000 if (subtotal == 0 or subtotal < 100000 and subtotal > 0) else 0
+
+    for item in cart_items:
+        p = item.product
+        if not p:
+            continue
+        unit_price = Money(currency=p.price_currency, amount=p.price_amount)
+        line_total = unit_price.amount * item.quantity
+        subtotal += line_total
+        items.append(CartItem(
+            item_id=item.id,
+            product=Product(
+                id=p.id,
+                title=p.title,
+                description=p.description,
+                price={"currency": p.price_currency, "amount": p.price_amount},
+                images=p.images or [],
+                category={"id": p.category.id if p.category else p.category_id, "name": p.category.name if p.category else "", "parent_id": p.category.parent_id if p.category else None},
+                seller_id=p.seller_id,
+                location=p.location or {},
+                attributes=p.attributes or {},
+                stock=p.stock or 1,
+                is_featured=bool(p.is_featured),
+                likes_count=p.likes_count or 0,
+                created_at=p.created_at.isoformat() if p.created_at else "",
+            ),
+            quantity=item.quantity,
+            unit_price=unit_price,
+            line_total=Money(currency="KRW", amount=line_total)
+        ))
+
+    shipping_fee_amount = 5000 if (subtotal == 0 or (subtotal < 100000 and subtotal > 0)) else 0
     shipping_fee = Money(currency="KRW", amount=shipping_fee_amount)
     grand_total = subtotal + shipping_fee.amount
-    
+
     return Cart(
         items=items,
         subtotal=Money(currency="KRW", amount=subtotal),
@@ -42,38 +63,22 @@ def get_cart(current_user: dict = Depends(get_current_user)):
     )
 
 
-@router.post("/items", response_model=Cart)
+@router.post("/items", response_model=Cart, status_code=201)
 def add_to_cart(
-    product_id: str,
-    quantity: int = 1,
-    current_user: dict = Depends(get_current_user)
+    req: AddToCartRequest,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    if product_id not in products_db:
+    service = DatabaseService(db)
+    product = service.get_product_by_id(req.product_id)
+    if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
-    user_id = current_user["id"]
-    if user_id not in cart_db:
-        cart_db[user_id] = {"items": []}
-    
-    # Check if item already exists
-    for item in cart_db[user_id]["items"]:
-        if item["product_id"] == product_id:
-            item["quantity"] += quantity
-            return get_cart(current_user)
-    
-    # Add new item
-    item_id = str(uuid.uuid4())
-    cart_db[user_id]["items"].append({
-        "item_id": item_id,
-        "product_id": product_id,
-        "quantity": quantity
-    })
-    
-    return get_cart(current_user)
+    service.add_to_cart(current_user["id"], req.product_id, req.quantity)
+    return get_cart(current_user, db)
 
 
 @router.post("/clear", response_model=Cart)
-def clear_cart(current_user: dict = Depends(get_current_user)):
-    user_id = current_user["id"]
-    cart_db[user_id] = {"items": []}
-    return get_cart(current_user)
+def clear_cart(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    service = DatabaseService(db)
+    service.clear_user_cart(current_user["id"])
+    return get_cart(current_user, db)

@@ -50,7 +50,7 @@
 - GET `/healthz`
 - GET `/readyz`
 - POST `/infer`
-- GET `/stream`
+- GET `/stream`:
 
 ## 참고
 
@@ -64,8 +64,7 @@
 - 소셜 로그인: `POST /auth/social/google`, `POST /auth/social/kakao`
 - 토큰 관련: `POST /auth/users/refresh`, `POST /auth/users/logout`
 - 카테고리 단건 조회: `GET /categories/{category_id}`
-- 결제: `POST /payments`, `GET /payments/{payment_id}`
 - 업로드: `POST /uploads/presigned-url`, `POST /uploads`
-- 기타: 배송 계산/옵션, 알림 목록/읽음 처리 등
+- 기타: 알림 목록/읽음 처리 등
 
 필요 시 우선순위를 정해 구현 후 본 문서를 갱신하세요.

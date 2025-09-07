@@ -1,9 +1,11 @@
 import hashlib
 import secrets
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from database import active_tokens
+from sqlalchemy.orm import Session
+from database.config import get_db
+from database.service import DatabaseService
 
 security = HTTPBearer(auto_error=False)
 
@@ -18,18 +20,32 @@ def generate_token() -> str:
     return secrets.token_urlsafe(32)
 
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
-    """Get current authenticated user from token"""
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+) -> dict:
+    """Get current authenticated user from token using DB-backed active tokens."""
     if credentials is None or not credentials.credentials:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     token = credentials.credentials
-    if token not in active_tokens:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    user_data = active_tokens[token]
-    if user_data["expires_at"] < datetime.now():
-        del active_tokens[token]
-        raise HTTPException(status_code=401, detail="Token expired")
-    
-    return user_data["user"]
+    service = DatabaseService(db)
+
+    # Validate token
+    if not service.is_token_active(token):
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    user = service.get_user_from_token(token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    # Normalize to dict compatible with existing pydantic models
+    return {
+        "id": user.id,
+        "role": getattr(user, "role", "user"),
+        "email": user.email,
+        "name": user.name,
+        "phone": user.phone,
+        "address": user.address,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+    }

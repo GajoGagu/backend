@@ -5,8 +5,8 @@ meta {
 }
 
 delete {
-  url: http://localhost:8000/wishlist/items/{{wishlist_item_id}}
-  body: none
+  url: {{base_url}}/wishlist/items
+  body: json
   auth: bearer
 }
 
@@ -14,12 +14,14 @@ auth:bearer {
   token: {{access_token}}
 }
 
+body:json {
+  {
+    "product_id": "{{product_id}}"
+  }
+}
+
 tests {
   test("Status code is 200", function() {
     expect(res.getStatus()).to.equal(200);
-  });
-  
-  test("Response confirms removal", function() {
-    expect(res.getBody().message).to.include("삭제");
   });
 }

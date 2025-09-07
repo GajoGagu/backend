@@ -1,7 +1,9 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 from models import Product
-from database import wishlist_db, products_db
+from database.config import get_db
+from database.service import DatabaseService
 from auth import get_current_user
 
 router = APIRouter(prefix="/wishlist", tags=["wishlist"])
@@ -11,60 +13,70 @@ router = APIRouter(prefix="/wishlist", tags=["wishlist"])
 def get_wishlist(
     current_user: dict = Depends(get_current_user),
     page: int = 1,
-    page_size: int = 20
+    page_size: int = 20,
+    db: Session = Depends(get_db)
 ):
-    user_id = current_user["id"]
-    wishlist_product_ids = wishlist_db.get(user_id, [])
-    
-    products = [products_db[pid] for pid in wishlist_product_ids if pid in products_db]
-    
+    service = DatabaseService(db)
+    items = service.get_user_wishlist(current_user["id"]) or []
+
+    # Pagination (simple slice)
     start = (page - 1) * page_size
     end = start + page_size
-    paginated_products = products[start:end]
-    
+    paginated = items[start:end]
+
+    def to_api_product(p) -> Product:
+        return Product(
+            id=p.id,
+            title=p.title,
+            description=p.description,
+            price={"currency": p.price_currency, "amount": p.price_amount},
+            images=p.images or [],
+            category={"id": p.category.id if p.category else p.category_id, "name": p.category.name if p.category else "", "parent_id": p.category.parent_id if p.category else None},
+            seller_id=p.seller_id,
+            location=p.location or {},
+            attributes=p.attributes or {},
+            stock=p.stock or 1,
+            is_featured=bool(p.is_featured),
+            likes_count=p.likes_count or 0,
+            created_at=p.created_at.isoformat() if p.created_at else "",
+        )
+
     return {
         "items": [
             {
-                "product": Product(**p),
-                "created_at": ""
-            } for p in paginated_products
+                "product": to_api_product(w.product),
+                "created_at": w.created_at.isoformat() if getattr(w, "created_at", None) else "",
+            }
+            for w in paginated if w.product is not None
         ],
         "page": page,
         "page_size": page_size,
-        "total": len(products)
+        "total": len(items)
     }
 
 
 @router.post("/items", response_model=Dict[str, Any])
 def add_to_wishlist(
     product_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    if product_id not in products_db:
+    service = DatabaseService(db)
+    product = service.get_product_by_id(product_id)
+    if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
-    user_id = current_user["id"]
-    if user_id not in wishlist_db:
-        wishlist_db[user_id] = []
-    
-    if product_id not in wishlist_db[user_id]:
-        wishlist_db[user_id].append(product_id)
-        products_db[product_id]["likes_count"] += 1
-    
-    return get_wishlist(current_user)
+    service.add_to_wishlist(current_user["id"], product_id)
+    return get_wishlist(current_user, db=db)
 
 
 @router.delete("/items", status_code=200)
 def remove_from_wishlist(
     product_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    user_id = current_user["id"]
-    if user_id not in wishlist_db or product_id not in wishlist_db[user_id]:
+    service = DatabaseService(db)
+    removed = service.remove_from_wishlist(current_user["id"], product_id)
+    if not removed:
         raise HTTPException(status_code=404, detail="Item not found in wishlist")
-    
-    wishlist_db[user_id].remove(product_id)
-    if product_id in products_db:
-        products_db[product_id]["likes_count"] = max(0, products_db[product_id]["likes_count"] - 1)
-    
-    return get_wishlist(current_user)
+    return get_wishlist(current_user, db=db)

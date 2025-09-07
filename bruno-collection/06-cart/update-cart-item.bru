@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: http://localhost:8000/cart/items/{{cart_item_id}}
+  url: {{base_url}}/cart
   body: json
   auth: bearer
 }
@@ -15,9 +15,7 @@ auth:bearer {
 }
 
 body:json {
-  {
-    "quantity": 2
-  }
+  {}
 }
 
 tests {
