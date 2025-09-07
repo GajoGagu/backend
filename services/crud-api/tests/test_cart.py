@@ -158,7 +158,9 @@ class TestCartOperations:
         assert data["grand_total"]["amount"] == 55000
         
         # Clear cart and test above threshold
-        # Note: In a real implementation, you'd need a clear cart endpoint
+        # Clear cart between cases
+        clear_resp = client.post("/cart/clear", headers=headers)
+        assert clear_resp.status_code == 200
         
         # Test above threshold (should have no shipping fee)
         product_above = sample_product_data.copy()

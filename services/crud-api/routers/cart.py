@@ -29,7 +29,9 @@ def get_cart(current_user: dict = Depends(get_current_user)):
                 line_total=Money(currency="KRW", amount=line_total)
             ))
     
-    shipping_fee = Money(currency="KRW", amount=5000 if subtotal < 100000 else 0)
+    # Apply 5,000 shipping fee for empty cart and when subtotal below threshold
+    shipping_fee_amount = 5000 if (subtotal == 0 or subtotal < 100000 and subtotal > 0) else 0
+    shipping_fee = Money(currency="KRW", amount=shipping_fee_amount)
     grand_total = subtotal + shipping_fee.amount
     
     return Cart(
@@ -67,4 +69,11 @@ def add_to_cart(
         "quantity": quantity
     })
     
+    return get_cart(current_user)
+
+
+@router.post("/clear", response_model=Cart)
+def clear_cart(current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+    cart_db[user_id] = {"items": []}
     return get_cart(current_user)

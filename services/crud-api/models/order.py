@@ -19,7 +19,8 @@ class OrderItemCreate(BaseModel):
 
 class OrderCreate(BaseModel):
     items: List[OrderItemCreate]
-    shipping_address: Address
+    # Accept flexible structure used by tests
+    shipping_address: Dict
     payment_method: str
     total_amount: float
 

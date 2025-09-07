@@ -87,7 +87,7 @@ def sample_product_data():
         "description": "테스트용 상품입니다.",
         "price": {
             "currency": "KRW",
-            "amount": 100000
+            "amount": 40000
         },
         "category_id": "cat-001",
         "location": {

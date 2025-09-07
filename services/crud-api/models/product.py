@@ -37,6 +37,6 @@ class ProductCreate(BaseModel):
     description: Optional[str] = None
     price: Money
     category_id: str
-    location: Address
+    location: Dict[str, Any]
     attributes: Dict[str, Any] = {}
     image_file_ids: List[str] = []

@@ -23,14 +23,19 @@ def get_wishlist(
     paginated_products = products[start:end]
     
     return {
-        "items": [Product(**p) for p in paginated_products],
+        "items": [
+            {
+                "product": Product(**p),
+                "created_at": ""
+            } for p in paginated_products
+        ],
         "page": page,
         "page_size": page_size,
         "total": len(products)
     }
 
 
-@router.put("/{product_id}", status_code=204)
+@router.post("/items", response_model=Dict[str, Any])
 def add_to_wishlist(
     product_id: str,
     current_user: dict = Depends(get_current_user)
@@ -45,15 +50,21 @@ def add_to_wishlist(
     if product_id not in wishlist_db[user_id]:
         wishlist_db[user_id].append(product_id)
         products_db[product_id]["likes_count"] += 1
+    
+    return get_wishlist(current_user)
 
 
-@router.delete("/{product_id}", status_code=204)
+@router.delete("/items", status_code=200)
 def remove_from_wishlist(
     product_id: str,
     current_user: dict = Depends(get_current_user)
 ):
     user_id = current_user["id"]
-    if user_id in wishlist_db and product_id in wishlist_db[user_id]:
-        wishlist_db[user_id].remove(product_id)
-        if product_id in products_db:
-            products_db[product_id]["likes_count"] = max(0, products_db[product_id]["likes_count"] - 1)
+    if user_id not in wishlist_db or product_id not in wishlist_db[user_id]:
+        raise HTTPException(status_code=404, detail="Item not found in wishlist")
+    
+    wishlist_db[user_id].remove(product_id)
+    if product_id in products_db:
+        products_db[product_id]["likes_count"] = max(0, products_db[product_id]["likes_count"] - 1)
+    
+    return get_wishlist(current_user)

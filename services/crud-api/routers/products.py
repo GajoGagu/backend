@@ -60,8 +60,23 @@ def create_product(
 ):
     if request.category_id not in categories_db:
         raise HTTPException(status_code=400, detail="Invalid category")
+    # Basic validation similar to tests' expectations
+    if not request.title or request.price.amount < 0:
+        raise HTTPException(status_code=422, detail="Invalid product data")
     
     product_id = str(uuid.uuid4())
+    # Normalize location to Address-like dict if minimal fields provided
+    raw_location = getattr(request.location, "model_dump", lambda: request.location)()
+    if "postcode" not in raw_location:
+        raw_location = {
+            "postcode": raw_location.get("postal_code", ""),
+            "line1": raw_location.get("line1") or raw_location.get("address", ""),
+            "line2": raw_location.get("line2"),
+            "city": raw_location.get("city", ""),
+            "region": raw_location.get("region", ""),
+            "country": raw_location.get("country", "KR")
+        }
+
     product = {
         "id": product_id,
         "title": request.title,
@@ -70,7 +85,7 @@ def create_product(
         "images": [],
         "category": categories_db[request.category_id],
         "seller_id": current_user["id"],
-        "location": request.location.model_dump(),
+        "location": raw_location,
         "attributes": request.attributes,
         "stock": 1,
         "is_featured": False,

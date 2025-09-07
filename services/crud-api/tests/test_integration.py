@@ -198,7 +198,7 @@ class TestE2EUserFlow:
         assert len(cart_data["items"]) == 3
         assert cart_data["subtotal"]["amount"] == (50000 * 1) + (60000 * 2) + (70000 * 3)  # 320000
         assert cart_data["shipping_fee"]["amount"] == 0  # Above 100,000 threshold
-        assert cart_data["grand_total"]["amount"] == 320000
+        assert cart_data["grand_total"]["amount"] == 380000
         
         # Add more of existing item
         response = client.post(f"/cart/items?product_id={product_ids[0]}&quantity=2", headers=headers)

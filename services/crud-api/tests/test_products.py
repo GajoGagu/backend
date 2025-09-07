@@ -142,7 +142,9 @@ class TestProductSearch:
         """Test product filtering by price range."""
         # Create a product first
         headers = {"Authorization": f"Bearer {authenticated_user_token}"}
-        create_response = client.post("/products", json=sample_product_data, headers=headers)
+        product = sample_product_data.copy()
+        product["price"]["amount"] = 100000  # Ensure it falls within the filter range
+        create_response = client.post("/products", json=product, headers=headers)
         assert create_response.status_code == 201
         
         # Filter by price range
