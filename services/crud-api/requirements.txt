@@ -8,3 +8,8 @@ sqlalchemy==2.*
 psycopg2-binary==2.*
 alembic==1.*
 python-dotenv==1.*
+# Testing dependencies
+pytest==7.*
+pytest-asyncio==0.*
+httpx==0.*
+pytest-cov==4.*

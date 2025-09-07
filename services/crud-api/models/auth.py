@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Union
 from .base import Address
 
 
@@ -32,6 +32,19 @@ class User(BaseModel):
     created_at: str
 
 
+class Rider(BaseModel):
+    id: str
+    role: str = "rider"
+    email: str
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[Address] = None
+    vehicle_type: str = "car"
+    kakao_open_chat_url: Optional[str] = None
+    rating: float = 0.0
+    created_at: str
+
+
 class AuthResponse(BaseModel):
-    user: User
+    user: Union[User, Rider]
     tokens: Tokens

@@ -11,15 +11,31 @@ class OrderItem(BaseModel):
     line_total: Money
 
 
+class OrderItemCreate(BaseModel):
+    product_id: str
+    quantity: int
+    price: float
+
+
+class OrderCreate(BaseModel):
+    items: List[OrderItemCreate]
+    shipping_address: Address
+    payment_method: str
+    total_amount: float
+
+
+class OrderStatusUpdate(BaseModel):
+    status: str
+
+
 class Order(BaseModel):
     id: str
+    user_id: str
     status: str
-    items: List[OrderItem]
-    address: Address
-    shipping_fee: Money
-    subtotal: Money
-    discount_total: Money = Money(currency="KRW", amount=0)
-    total: Money
+    items: List[Dict]  # Simplified for now
+    total_amount: float
+    shipping_fee: float
+    shipping_address: Dict
     payment_method: str
-    assigned_rider: Optional[Dict] = None
     created_at: str
+    updated_at: str

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Depends
-from models import SignupRequest, LoginRequest, AuthResponse, User, Tokens
+from models import SignupRequest, LoginRequest, AuthResponse, User, Rider, Tokens
 from database import users_db, riders_db, active_tokens
 from auth import hash_password, generate_token
 
@@ -97,7 +97,7 @@ def signup_rider(request: SignupRequest):
     }
     
     return AuthResponse(
-        user=User(**rider),
+        user=Rider(**rider),
         tokens=Tokens(
             access_token=access_token,
             refresh_token=refresh_token
@@ -123,7 +123,7 @@ def login_rider(request: LoginRequest):
     }
     
     return AuthResponse(
-        user=User(**rider),
+        user=Rider(**rider),
         tokens=Tokens(
             access_token=access_token,
             refresh_token=refresh_token
