@@ -12,7 +12,7 @@ router = APIRouter(prefix="/uploads", tags=["uploads"])
 
 # Simple file storage configuration (in production, use cloud storage like S3)
 UPLOAD_DIR = "uploads"
-ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf", ".doc", ".docx"}
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf", ".doc", ".docx", ".txt"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 
@@ -75,7 +75,7 @@ async def upload_file(
     """Upload file directly"""
     
     # Validate file
-    if not file.filename:
+    if not file.filename or file.filename.strip() == "":
         raise HTTPException(status_code=400, detail="No file provided")
     
     if not is_allowed_file(file.filename):

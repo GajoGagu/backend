@@ -6,3 +6,7 @@ venv/
 dist/
 build/
 .DS_Store
+
+# Uploaded files
+uploads/
+*.db

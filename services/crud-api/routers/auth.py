@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from models import SignupRequest, LoginRequest, AuthResponse, User, Rider, Tokens, RefreshTokenRequest, LogoutRequest, SocialLoginRequest
 from database.config import get_db
 from database.service import DatabaseService
+from database.storage import riders_db, active_tokens
 from auth import hash_password, generate_token
 from auth.social_auth import verify_social_token
 
@@ -28,6 +29,7 @@ def signup_user(request: SignupRequest, db: Session = Depends(get_db)):
     access_token = generate_token()
     refresh_token = generate_token()
     service.add_active_token(user_id=created.id, token=access_token, expires_at=datetime.utcnow() + timedelta(hours=1))
+    service.add_active_token(user_id=created.id, token=refresh_token, expires_at=datetime.utcnow() + timedelta(days=7))
 
     return AuthResponse(
         user=User(
@@ -56,6 +58,7 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
     access_token = generate_token()
     refresh_token = generate_token()
     service.add_active_token(user_id=user.id, token=access_token, expires_at=datetime.utcnow() + timedelta(hours=1))
+    service.add_active_token(user_id=user.id, token=refresh_token, expires_at=datetime.utcnow() + timedelta(days=7))
 
     return AuthResponse(
         user=User(
@@ -157,6 +160,13 @@ def refresh_user_token(request: RefreshTokenRequest, db: Session = Depends(get_d
         expires_at=datetime.utcnow() + timedelta(hours=1)
     )
     
+    # Add new refresh token
+    service.add_active_token(
+        user_id=user.id, 
+        token=new_refresh_token, 
+        expires_at=datetime.utcnow() + timedelta(days=7)
+    )
+    
     # Remove old refresh token (simplified - in production, manage refresh tokens separately)
     service.remove_token(request.refresh_token)
     
@@ -209,9 +219,9 @@ async def google_login(request: SocialLoginRequest, db: Session = Depends(get_db
     
     # Get or create user
     user = service.get_or_create_social_user(
-        social_id=social_user.id,
-        email=social_user.email,
-        name=social_user.name,
+        social_id=social_user["id"],
+        email=social_user["email"],
+        name=social_user["name"],
         provider="google"
     )
     
@@ -222,6 +232,11 @@ async def google_login(request: SocialLoginRequest, db: Session = Depends(get_db
         user_id=user.id, 
         token=access_token, 
         expires_at=datetime.utcnow() + timedelta(hours=1)
+    )
+    service.add_active_token(
+        user_id=user.id, 
+        token=refresh_token, 
+        expires_at=datetime.utcnow() + timedelta(days=7)
     )
     
     return AuthResponse(
@@ -254,9 +269,9 @@ async def kakao_login(request: SocialLoginRequest, db: Session = Depends(get_db)
     
     # Get or create user
     user = service.get_or_create_social_user(
-        social_id=social_user.id,
-        email=social_user.email,
-        name=social_user.name,
+        social_id=social_user["id"],
+        email=social_user["email"],
+        name=social_user["name"],
         provider="kakao"
     )
     
@@ -267,6 +282,11 @@ async def kakao_login(request: SocialLoginRequest, db: Session = Depends(get_db)
         user_id=user.id, 
         token=access_token, 
         expires_at=datetime.utcnow() + timedelta(hours=1)
+    )
+    service.add_active_token(
+        user_id=user.id, 
+        token=refresh_token, 
+        expires_at=datetime.utcnow() + timedelta(days=7)
     )
     
     return AuthResponse(
