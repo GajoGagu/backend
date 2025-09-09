@@ -1,11 +1,26 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from models import Category
 from database.config import get_db
 from database.service import DatabaseService
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/categories", tags=["categories"])
+
+
+class CreateCategoryRequest(BaseModel):
+    id: str
+    name: str
+    parent_id: Optional[str] = None
+
+
+@router.post("", response_model=Category, status_code=201)
+def create_category(request: CreateCategoryRequest, db: Session = Depends(get_db)):
+    """Create a new category"""
+    service = DatabaseService(db)
+    category = service.create_category(request.name, request.parent_id, request.id)
+    return Category(id=category.id, name=category.name, parent_id=category.parent_id)
 
 
 @router.get("", response_model=List[Category])

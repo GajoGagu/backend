@@ -20,7 +20,7 @@ class TestE2EUserFlow:
         
         # 3. Add product to cart
         cart_response = client.post(f"/cart/items?product_id={product_id}&quantity=2", headers=headers)
-        assert cart_response.status_code == 200
+        assert cart_response.status_code == 201
         
         # 4. Verify cart contents
         cart_get_response = client.get("/cart", headers=headers)
@@ -90,7 +90,7 @@ class TestE2EUserFlow:
         
         # 3. User adds product to cart and creates order
         cart_response = client.post(f"/cart/items?product_id={product_id}&quantity=1", headers=user_headers)
-        assert cart_response.status_code == 200
+        assert cart_response.status_code == 201
         
         order_data = {
             "items": [
@@ -115,9 +115,10 @@ class TestE2EUserFlow:
         order_id = order_response.json()["id"]
         
         # 4. Verify users can't access each other's data
-        # Rider tries to access user's orders
+        # Rider tries to access user's orders (should get empty list, not 401)
         rider_orders = client.get("/orders", headers=rider_headers)
         assert rider_orders.status_code == 200
+        assert len(rider_orders.json()) == 0  # Rider has no orders
         assert rider_orders.json() == []  # Rider has no orders
         
         # User tries to access rider's orders (should be empty)
@@ -187,8 +188,8 @@ class TestE2EUserFlow:
         # Add different quantities of each product
         for i, product_id in enumerate(product_ids):
             quantity = i + 1
-            response = client.post(f"/cart/items?product_id={product_id}&quantity={quantity}", headers=headers)
-            assert response.status_code == 200
+            response = client.post(f"/cart/items?product_id={product_id}&quantity={quantity}", headers=headers)        
+            assert response.status_code == 201
         
         # Verify cart contents
         cart_response = client.get("/cart", headers=headers)
@@ -202,7 +203,7 @@ class TestE2EUserFlow:
         
         # Add more of existing item
         response = client.post(f"/cart/items?product_id={product_ids[0]}&quantity=2", headers=headers)
-        assert response.status_code == 200
+        assert response.status_code == 201
         
         # Verify quantity increased
         cart_response = client.get("/cart", headers=headers)
@@ -333,7 +334,7 @@ class TestPerformance:
         # Add all products to cart
         for product_id in product_ids:
             response = client.post(f"/cart/items?product_id={product_id}&quantity=1", headers=headers)
-            assert response.status_code == 200
+            assert response.status_code == 201
         
         # Verify cart can handle many items
         cart_response = client.get("/cart", headers=headers)

@@ -24,7 +24,8 @@ def get_products(
     db: Session = Depends(get_db)
 ):
     service = DatabaseService(db)
-    db_products = service.get_products(skip=(page - 1) * page_size, limit=page_size, category_id=category_id)
+    db_products = service.get_products(skip=(page - 1) * page_size, limit=page_size, 
+                                     category_id=category_id, price_min=price_min, price_max=price_max, sort=sort)
 
     items: List[Product] = []
     for p in db_products:
@@ -64,6 +65,11 @@ def create_product(
     # Basic validation similar to tests' expectations
     if not request.title or request.price.amount < 0:
         raise HTTPException(status_code=422, detail="Invalid product data")
+    
+    # Validate category exists
+    category = service.get_category_by_id(request.category_id)
+    if not category:
+        raise HTTPException(status_code=400, detail="Invalid category")
 
     # Normalize location to Address-like dict if minimal fields provided
     raw_location = getattr(request.location, "model_dump", lambda: request.location)()

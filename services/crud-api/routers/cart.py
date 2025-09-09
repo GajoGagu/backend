@@ -65,15 +65,16 @@ def get_cart(current_user: dict = Depends(get_current_user), db: Session = Depen
 
 @router.post("/items", response_model=Cart, status_code=201)
 def add_to_cart(
-    req: AddToCartRequest,
+    product_id: str,
+    quantity: int = 1,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     service = DatabaseService(db)
-    product = service.get_product_by_id(req.product_id)
+    product = service.get_product_by_id(product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    service.add_to_cart(current_user["id"], req.product_id, req.quantity)
+    service.add_to_cart(current_user["id"], product_id, quantity)
     return get_cart(current_user, db)
 
 

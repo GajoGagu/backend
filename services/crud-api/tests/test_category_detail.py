@@ -35,8 +35,9 @@ class TestCategoryDetail:
         """Test category detail with empty ID."""
         response = client.get("/categories/")
         
-        # This should return 404 or 405 depending on routing
-        assert response.status_code in [404, 405]
+        # This should return 200 as it's the categories list endpoint
+        assert response.status_code == 200
+        assert isinstance(response.json(), list)
 
     def test_get_category_detail_special_characters(self, client):
         """Test category detail with special characters in ID."""

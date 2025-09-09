@@ -95,7 +95,7 @@ def sample_rider_data():
 
 
 @pytest.fixture
-def sample_category():
+def sample_category(client):
     """Sample category data for testing."""
     category_id = "cat-001"
     category = {
@@ -103,7 +103,14 @@ def sample_category():
         "name": "가구",
         "parent_id": None
     }
-    categories_db[category_id] = category
+    
+    # Create category in database
+    response = client.post("/categories", json=category)
+    if response.status_code != 201:
+        # If category already exists, that's fine
+        print(f"Category creation failed: {response.status_code} - {response.text}")
+        pass
+    
     return category
 
 

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from models import SignupRequest, LoginRequest, AuthResponse, User, Rider, Tokens, RefreshTokenRequest, LogoutRequest, SocialLoginRequest
@@ -28,8 +28,8 @@ def signup_user(request: SignupRequest, db: Session = Depends(get_db)):
 
     access_token = generate_token()
     refresh_token = generate_token()
-    service.add_active_token(user_id=created.id, token=access_token, expires_at=datetime.utcnow() + timedelta(hours=1))
-    service.add_active_token(user_id=created.id, token=refresh_token, expires_at=datetime.utcnow() + timedelta(days=7))
+    service.add_active_token(user_id=created.id, token=access_token, expires_at=datetime.now(timezone.utc) + timedelta(hours=1))
+    service.add_active_token(user_id=created.id, token=refresh_token, expires_at=datetime.now(timezone.utc) + timedelta(days=7))
 
     return AuthResponse(
         user=User(
@@ -39,7 +39,7 @@ def signup_user(request: SignupRequest, db: Session = Depends(get_db)):
             name=created.name,
             phone=created.phone,
             address=created.address,
-            created_at=created.created_at.isoformat() if created.created_at else datetime.utcnow().isoformat(),
+            created_at=created.created_at.isoformat() if created.created_at else datetime.now(timezone.utc).isoformat(),
         ),
         tokens=Tokens(
             access_token=access_token,
@@ -57,8 +57,8 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
 
     access_token = generate_token()
     refresh_token = generate_token()
-    service.add_active_token(user_id=user.id, token=access_token, expires_at=datetime.utcnow() + timedelta(hours=1))
-    service.add_active_token(user_id=user.id, token=refresh_token, expires_at=datetime.utcnow() + timedelta(days=7))
+    service.add_active_token(user_id=user.id, token=access_token, expires_at=datetime.now(timezone.utc) + timedelta(hours=1))
+    service.add_active_token(user_id=user.id, token=refresh_token, expires_at=datetime.now(timezone.utc) + timedelta(days=7))
 
     return AuthResponse(
         user=User(
@@ -68,7 +68,7 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
             name=user.name,
             phone=user.phone,
             address=user.address,
-            created_at=user.created_at.isoformat() if user.created_at else datetime.utcnow().isoformat(),
+            created_at=user.created_at.isoformat() if user.created_at else datetime.now(timezone.utc).isoformat(),
         ),
         tokens=Tokens(
             access_token=access_token,
@@ -78,35 +78,41 @@ def login_user(request: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/riders/signup", response_model=AuthResponse, status_code=201)
-def signup_rider(request: SignupRequest):
-    if request.email in riders_db:
+def signup_rider(request: SignupRequest, db: Session = Depends(get_db)):
+    service = DatabaseService(db)
+    
+    # Check if email already exists
+    existing_user = service.get_user_by_email(request.email)
+    if existing_user:
         raise HTTPException(status_code=400, detail="Email already exists")
     
-    rider_id = str(uuid.uuid4())
-    rider = {
-        "id": rider_id,
-        "role": "rider",
-        "email": request.email,
-        "name": request.name,
-        "phone": request.phone,
-        "password_hash": hash_password(request.password),
-        "vehicle_type": "car",
-        "kakao_open_chat_url": "",
-        "rating": 0.0,
-        "created_at": datetime.now().isoformat()
-    }
-    riders_db[request.email] = rider
+    # Create rider user
+    created = service.create_user(
+        email=request.email,
+        password=request.password,
+        name=request.name,
+        phone=request.phone,
+        role="rider"
+    )
     
     access_token = generate_token()
     refresh_token = generate_token()
-    
-    active_tokens[access_token] = {
-        "user": rider,
-        "expires_at": datetime.now() + timedelta(hours=1)
-    }
+    service.add_active_token(user_id=created.id, token=access_token, expires_at=datetime.now(timezone.utc) + timedelta(hours=1))
+    service.add_active_token(user_id=created.id, token=refresh_token, expires_at=datetime.now(timezone.utc) + timedelta(days=7))
     
     return AuthResponse(
-        user=Rider(**rider),
+        user=Rider(
+            id=created.id,
+            role=getattr(created, "role", "rider"),
+            email=created.email,
+            name=created.name,
+            phone=created.phone,
+            address=created.address,
+            vehicle_type="car",
+            kakao_open_chat_url="",
+            rating=0.0,
+            created_at=created.created_at.isoformat() if created.created_at else datetime.now(timezone.utc).isoformat(),
+        ),
         tokens=Tokens(
             access_token=access_token,
             refresh_token=refresh_token
@@ -115,24 +121,36 @@ def signup_rider(request: SignupRequest):
 
 
 @router.post("/riders/login", response_model=AuthResponse)
-def login_rider(request: LoginRequest):
-    if request.email not in riders_db:
+def login_rider(request: LoginRequest, db: Session = Depends(get_db)):
+    service = DatabaseService(db)
+    
+    # Authenticate user
+    user = service.authenticate_user(request.email, request.password)
+    if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    rider = riders_db[request.email]
-    if rider["password_hash"] != hash_password(request.password):
+    # Check if user is a rider
+    if getattr(user, "role", "user") != "rider":
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     access_token = generate_token()
     refresh_token = generate_token()
-    
-    active_tokens[access_token] = {
-        "user": rider,
-        "expires_at": datetime.now() + timedelta(hours=1)
-    }
+    service.add_active_token(user_id=user.id, token=access_token, expires_at=datetime.now(timezone.utc) + timedelta(hours=1))
+    service.add_active_token(user_id=user.id, token=refresh_token, expires_at=datetime.now(timezone.utc) + timedelta(days=7))
     
     return AuthResponse(
-        user=Rider(**rider),
+        user=Rider(
+            id=user.id,
+            role=getattr(user, "role", "rider"),
+            email=user.email,
+            name=user.name,
+            phone=user.phone,
+            address=user.address,
+            vehicle_type="car",
+            kakao_open_chat_url="",
+            rating=0.0,
+            created_at=user.created_at.isoformat() if user.created_at else datetime.now(timezone.utc).isoformat(),
+        ),
         tokens=Tokens(
             access_token=access_token,
             refresh_token=refresh_token
@@ -157,14 +175,14 @@ def refresh_user_token(request: RefreshTokenRequest, db: Session = Depends(get_d
     service.add_active_token(
         user_id=user.id, 
         token=new_access_token, 
-        expires_at=datetime.utcnow() + timedelta(hours=1)
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1)
     )
     
     # Add new refresh token
     service.add_active_token(
         user_id=user.id, 
         token=new_refresh_token, 
-        expires_at=datetime.utcnow() + timedelta(days=7)
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
     )
     
     # Remove old refresh token (simplified - in production, manage refresh tokens separately)
@@ -178,7 +196,7 @@ def refresh_user_token(request: RefreshTokenRequest, db: Session = Depends(get_d
             name=user.name,
             phone=user.phone,
             address=user.address,
-            created_at=user.created_at.isoformat() if user.created_at else datetime.utcnow().isoformat(),
+            created_at=user.created_at.isoformat() if user.created_at else datetime.now(timezone.utc).isoformat(),
         ),
         tokens=Tokens(
             access_token=new_access_token,
@@ -231,12 +249,12 @@ async def google_login(request: SocialLoginRequest, db: Session = Depends(get_db
     service.add_active_token(
         user_id=user.id, 
         token=access_token, 
-        expires_at=datetime.utcnow() + timedelta(hours=1)
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1)
     )
     service.add_active_token(
         user_id=user.id, 
         token=refresh_token, 
-        expires_at=datetime.utcnow() + timedelta(days=7)
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
     )
     
     return AuthResponse(
@@ -247,7 +265,7 @@ async def google_login(request: SocialLoginRequest, db: Session = Depends(get_db
             name=user.name,
             phone=user.phone,
             address=user.address,
-            created_at=user.created_at.isoformat() if user.created_at else datetime.utcnow().isoformat(),
+            created_at=user.created_at.isoformat() if user.created_at else datetime.now(timezone.utc).isoformat(),
         ),
         tokens=Tokens(
             access_token=access_token,
@@ -281,12 +299,12 @@ async def kakao_login(request: SocialLoginRequest, db: Session = Depends(get_db)
     service.add_active_token(
         user_id=user.id, 
         token=access_token, 
-        expires_at=datetime.utcnow() + timedelta(hours=1)
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1)
     )
     service.add_active_token(
         user_id=user.id, 
         token=refresh_token, 
-        expires_at=datetime.utcnow() + timedelta(days=7)
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
     )
     
     return AuthResponse(
@@ -297,7 +315,7 @@ async def kakao_login(request: SocialLoginRequest, db: Session = Depends(get_db)
             name=user.name,
             phone=user.phone,
             address=user.address,
-            created_at=user.created_at.isoformat() if user.created_at else datetime.utcnow().isoformat(),
+            created_at=user.created_at.isoformat() if user.created_at else datetime.now(timezone.utc).isoformat(),
         ),
         tokens=Tokens(
             access_token=access_token,

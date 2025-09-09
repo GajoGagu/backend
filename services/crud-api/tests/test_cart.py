@@ -43,7 +43,7 @@ class TestCartOperations:
         
         # Add to cart
         response = client.post(f"/cart/items?product_id={product_id}&quantity=2", headers=headers)
-        assert response.status_code == 200
+        assert response.status_code == 201
         
         data = response.json()
         
@@ -85,11 +85,11 @@ class TestCartOperations:
         
         # Add to cart first time
         response1 = client.post(f"/cart/items?product_id={product_id}&quantity=2", headers=headers)
-        assert response1.status_code == 200
+        assert response1.status_code == 201
         
         # Add same item again
         response2 = client.post(f"/cart/items?product_id={product_id}&quantity=3", headers=headers)
-        assert response2.status_code == 200
+        assert response2.status_code == 201
         
         data = response2.json()
         
@@ -120,7 +120,7 @@ class TestCartOperations:
         # Add all products to cart
         for i, product_id in enumerate(product_ids):
             response = client.post(f"/cart/items?product_id={product_id}&quantity={i+1}", headers=headers)
-            assert response.status_code == 200
+            assert response.status_code == 201
         
         # Get final cart
         response = client.get("/cart", headers=headers)
@@ -151,7 +151,7 @@ class TestCartOperations:
         product_id = create_response.json()["id"]
         
         response = client.post(f"/cart/items?product_id={product_id}&quantity=1", headers=headers)
-        assert response.status_code == 200
+        assert response.status_code == 201
         
         data = response.json()
         assert data["shipping_fee"]["amount"] == 5000
@@ -172,7 +172,7 @@ class TestCartOperations:
         product_id = create_response.json()["id"]
         
         response = client.post(f"/cart/items?product_id={product_id}&quantity=1", headers=headers)
-        assert response.status_code == 200
+        assert response.status_code == 201
         
         data = response.json()
         assert data["shipping_fee"]["amount"] == 0
@@ -190,12 +190,12 @@ class TestCartOperations:
         # Test with zero quantity
         response = client.post(f"/cart/items?product_id={product_id}&quantity=0", headers=headers)
         # Should succeed (validation might be handled at application level)
-        assert response.status_code in [200, 422]
+        assert response.status_code in [201, 422]
         
         # Test with negative quantity
         response = client.post(f"/cart/items?product_id={product_id}&quantity=-1", headers=headers)
         # Should succeed (validation might be handled at application level)
-        assert response.status_code in [200, 422]
+        assert response.status_code in [201, 422]
 
     def test_cart_removes_deleted_products(self, client, authenticated_user_token, sample_category, sample_product_data):
         """Test that cart handles deleted products gracefully."""
@@ -207,7 +207,7 @@ class TestCartOperations:
         product_id = create_response.json()["id"]
         
         response = client.post(f"/cart/items?product_id={product_id}&quantity=1", headers=headers)
-        assert response.status_code == 200
+        assert response.status_code == 201
         
         # Verify item is in cart
         response = client.get("/cart", headers=headers)

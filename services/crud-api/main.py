@@ -1,4 +1,5 @@
 import uvicorn
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from database import init_sample_data
 from database.config import create_tables
@@ -9,10 +10,19 @@ from routers import (
 from routers.notifications import router as notifications_router
 from routers.uploads import router as uploads_router
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    create_tables()
+    init_sample_data()
+    yield
+    # Shutdown (if needed)
+
 app = FastAPI(
     title="가져가구 API",
     version="1.0.0",
-    description="회원/라이더 분리 로그인, 소셜 로그인, 가구 조회·찜, 장바구니/결제/주문, 알림, 제품 등록, AI 유사 스타일 추천을 포함한 REST API"
+    description="회원/라이더 분리 로그인, 소셜 로그인, 가구 조회·찜, 장바구니/결제/주문, 알림, 제품 등록, AI 유사 스타일 추천을 포함한 REST API",
+    lifespan=lifespan
 )
 
 # Include routers
@@ -28,11 +38,6 @@ app.include_router(ai_router)
 app.include_router(notifications_router)
 app.include_router(uploads_router)
 
-# Initialize database and sample data
-@app.on_event("startup")
-async def startup_event():
-    create_tables()
-    init_sample_data()
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000)

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from .models import (
     User, Category, Product, Order, OrderItem, 
@@ -17,7 +17,7 @@ class DatabaseService:
         self.db = db
     
     # User operations
-    def create_user(self, email: str, password: str, name: str = None, phone: str = None) -> User:
+    def create_user(self, email: str, password: str, name: str = None, phone: str = None, role: str = "user") -> User:
         user_id = str(uuid.uuid4())
         password_hash = pwd_context.hash(password)
         
@@ -26,7 +26,8 @@ class DatabaseService:
             email=email,
             password_hash=password_hash,
             name=name,
-            phone=phone
+            phone=phone,
+            role=role
         )
         self.db.add(user)
         self.db.commit()
@@ -42,6 +43,13 @@ class DatabaseService:
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return pwd_context.verify(plain_password, hashed_password)
     
+    def authenticate_user(self, email: str, password: str) -> Optional[User]:
+        """Authenticate user with email and password"""
+        user = self.get_user_by_email(email)
+        if user and self.verify_password(password, user.password_hash):
+            return user
+        return None
+    
     # Category operations
     def get_categories(self) -> List[Category]:
         return self.db.query(Category).all()
@@ -49,8 +57,9 @@ class DatabaseService:
     def get_category_by_id(self, category_id: str) -> Optional[Category]:
         return self.db.query(Category).filter(Category.id == category_id).first()
     
-    def create_category(self, name: str, parent_id: str = None) -> Category:
-        category_id = str(uuid.uuid4())
+    def create_category(self, name: str, parent_id: str = None, category_id: str = None) -> Category:
+        if not category_id:
+            category_id = str(uuid.uuid4())
         category = Category(
             id=category_id,
             name=name,
@@ -62,10 +71,26 @@ class DatabaseService:
         return category
     
     # Product operations
-    def get_products(self, skip: int = 0, limit: int = 20, category_id: str = None) -> List[Product]:
+    def get_products(self, skip: int = 0, limit: int = 20, category_id: str = None, 
+                    price_min: float = None, price_max: float = None, sort: str = "recent") -> List[Product]:
         query = self.db.query(Product)
         if category_id:
             query = query.filter(Product.category_id == category_id)
+        if price_min is not None:
+            query = query.filter(Product.price_amount >= price_min)
+        if price_max is not None:
+            query = query.filter(Product.price_amount <= price_max)
+        
+        # Apply sorting
+        if sort == "price_asc":
+            query = query.order_by(Product.price_amount.asc())
+        elif sort == "price_desc":
+            query = query.order_by(Product.price_amount.desc())
+        elif sort == "recent":
+            query = query.order_by(Product.created_at.desc())
+        else:
+            query = query.order_by(Product.created_at.desc())  # default
+            
         return query.offset(skip).limit(limit).all()
     
     def get_product_by_id(self, product_id: str) -> Optional[Product]:
@@ -211,17 +236,35 @@ class DatabaseService:
         active_token = self.db.query(ActiveToken).filter(ActiveToken.token == token).first()
         if active_token:
             # Check if token is expired
-            if active_token.expires_at and active_token.expires_at < datetime.utcnow():
-                self.db.delete(active_token)
-                self.db.commit()
-                return False
+            if active_token.expires_at:
+                # Handle both timezone-aware and timezone-naive datetimes
+                now = datetime.now(timezone.utc)
+                expires_at = active_token.expires_at
+                
+                # If expires_at is timezone-naive, assume it's UTC
+                if expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
+                
+                if expires_at < now:
+                    self.db.delete(active_token)
+                    self.db.commit()
+                    return False
             return True
         return False
     
     def get_user_from_token(self, token: str) -> Optional[User]:
         active_token = self.db.query(ActiveToken).filter(ActiveToken.token == token).first()
-        if active_token and active_token.expires_at and active_token.expires_at > datetime.utcnow():
-            return self.get_user_by_id(active_token.user_id)
+        if active_token and active_token.expires_at:
+            # Handle both timezone-aware and timezone-naive datetimes
+            now = datetime.now(timezone.utc)
+            expires_at = active_token.expires_at
+            
+            # If expires_at is timezone-naive, assume it's UTC
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+            
+            if expires_at > now:
+                return self.get_user_by_id(active_token.user_id)
         return None
     
     def get_user_from_refresh_token(self, refresh_token: str) -> Optional[User]:

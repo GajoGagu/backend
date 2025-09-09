@@ -15,7 +15,7 @@ class TestOrderCreation:
         
         # Add product to cart
         cart_response = client.post(f"/cart/items?product_id={product_id}&quantity=2", headers=headers)
-        assert cart_response.status_code == 200
+        assert cart_response.status_code == 201
         
         # Create order
         order_data = {
@@ -132,7 +132,7 @@ class TestOrderCreation:
         
         # Add product to cart
         cart_response = client.post(f"/cart/items?product_id={product_id}&quantity=2", headers=headers)
-        assert cart_response.status_code == 200
+        assert cart_response.status_code == 201
         
         # Verify cart has items
         cart_get_response = client.get("/cart", headers=headers)
