@@ -224,6 +224,73 @@ class DatabaseService:
             return self.get_user_by_id(active_token.user_id)
         return None
     
+    def get_user_from_refresh_token(self, refresh_token: str) -> Optional[User]:
+        """Get user from refresh token (simplified - in production, use proper JWT validation)"""
+        # For now, we'll use the same token system for both access and refresh tokens
+        # In production, you'd have separate refresh token validation
+        return self.get_user_from_token(refresh_token)
+    
+    def revoke_user_tokens(self, user_id: str) -> bool:
+        """Revoke all active tokens for a user"""
+        tokens = self.db.query(ActiveToken).filter(ActiveToken.user_id == user_id).all()
+        for token in tokens:
+            self.db.delete(token)
+        self.db.commit()
+        return True
+    
+    # Notification operations
+    def create_notification(self, user_id: str, title: str, message: str, type: str = "info") -> Notification:
+        """Create a new notification for a user"""
+        notification = Notification(
+            id=str(uuid.uuid4()),
+            user_id=user_id,
+            title=title,
+            message=message,
+            type=type
+        )
+        self.db.add(notification)
+        self.db.commit()
+        self.db.refresh(notification)
+        return notification
+    
+    def get_user_notifications(self, user_id: str, skip: int = 0, limit: int = 20) -> List[Notification]:
+        """Get notifications for a user with pagination"""
+        return self.db.query(Notification).filter(
+            Notification.user_id == user_id
+        ).order_by(Notification.created_at.desc()).offset(skip).limit(limit).all()
+    
+    def get_unread_notification_count(self, user_id: str) -> int:
+        """Get count of unread notifications for a user"""
+        return self.db.query(Notification).filter(
+            Notification.user_id == user_id,
+            Notification.is_read == False
+        ).count()
+    
+    def mark_notifications_as_read(self, user_id: str, notification_ids: List[str]) -> int:
+        """Mark specific notifications as read"""
+        updated_count = self.db.query(Notification).filter(
+            Notification.user_id == user_id,
+            Notification.id.in_(notification_ids)
+        ).update({"is_read": True}, synchronize_session=False)
+        self.db.commit()
+        return updated_count
+    
+    def get_or_create_social_user(self, social_id: str, email: str, name: str = None, provider: str = "social") -> User:
+        """Get existing user or create new user for social login"""
+        # Try to find existing user by email first
+        user = self.get_user_by_email(email)
+        
+        if user:
+            return user
+        
+        # Create new user for social login
+        # Use social_id as password (in production, use proper social user handling)
+        return self.create_user(
+            email=email,
+            password=social_id,  # In production, handle social users differently
+            name=name or email.split("@")[0]
+        )
+    
     # Initialize sample data
     def init_sample_data(self):
         """Initialize sample data for development"""

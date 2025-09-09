@@ -6,6 +6,8 @@ from routers import (
     health_router, auth_router, users_router, categories_router,
     products_router, wishlist_router, cart_router, ai_router, orders_router
 )
+from routers.notifications import router as notifications_router
+from routers.uploads import router as uploads_router
 
 app = FastAPI(
     title="가져가구 API",
@@ -23,6 +25,8 @@ app.include_router(wishlist_router)
 app.include_router(cart_router)
 app.include_router(orders_router)
 app.include_router(ai_router)
+app.include_router(notifications_router)
+app.include_router(uploads_router)
 
 # Initialize database and sample data
 @app.on_event("startup")

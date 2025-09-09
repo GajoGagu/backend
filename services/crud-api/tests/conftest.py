@@ -4,6 +4,11 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from main import app
 from database import users_db, riders_db, products_db, categories_db, active_tokens
+from database.config import get_db
+from database.service import DatabaseService
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 
 @pytest.fixture(scope="session")
@@ -17,6 +22,29 @@ def event_loop():
 @pytest.fixture
 def client():
     """Create a test client for synchronous tests."""
+    # Create in-memory SQLite database for testing
+    SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    
+    # Create tables
+    from database.models import Base
+    Base.metadata.create_all(bind=engine)
+    
+    # Override the get_db dependency
+    def override_get_db():
+        try:
+            db = TestingSessionLocal()
+            yield db
+        finally:
+            db.close()
+    
+    app.dependency_overrides[get_db] = override_get_db
+    
     return TestClient(app)
 
 
