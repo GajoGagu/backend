@@ -5,29 +5,17 @@ meta {
 }
 
 post {
-  url: {{base_url}}/ai/style-match
+  url: http://localhost:8001/ai/style-match
   body: json
-  auth: bearer
-}
-
-auth:bearer {
-  token: {{access_token}}
+  auth: none
 }
 
 body:json {
   {
-    "style_preference": "모던",
-    "budget_range": {
-      "min": 100000,
-      "max": 1000000
-    },
-    "room_type": "침실",
-    "existing_items": [
-      {
-        "product_id": "{{product_id}}",
-        "style": "모던"
-      }
-    ]
+    "room_image_id": "room1",
+    "furniture_image_ids": [],
+    "top_k": 10,
+    "filters": {}
   }
 }
 
@@ -36,16 +24,16 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
   
-  test("Response has recommendations", function() {
+  test("Response has matches", function() {
     expect(res.getBody()).to.be.an('object');
-    expect(res.getBody()).to.have.property('recommendations');
-    expect(res.getBody().recommendations).to.be.an('array');
+    expect(res.getBody()).to.have.property('matches');
+    expect(res.getBody().matches).to.be.an('array');
   });
   
-  test("Recommendations have product details", function() {
-    if (res.getBody().recommendations.length > 0) {
-      expect(res.getBody().recommendations[0]).to.have.property('product');
-      expect(res.getBody().recommendations[0]).to.have.property('match_score');
+  test("Match item shape", function() {
+    if (res.getBody().matches.length > 0) {
+      expect(res.getBody().matches[0]).to.have.property('product');
+      expect(res.getBody().matches[0]).to.have.property('score');
     }
   });
 }

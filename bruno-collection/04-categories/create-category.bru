@@ -5,17 +5,14 @@ meta {
 }
 
 post {
-  url: {{base_url}}/categories
+  url: http://localhost:8001/categories
   body: json
-  auth: bearer
-}
-
-auth:bearer {
-  token: {{access_token}}
+  auth: none
 }
 
 body:json {
   {
+    "id": "cat-sample-1",
     "name": "침실가구",
     "parent_id": null
   }
