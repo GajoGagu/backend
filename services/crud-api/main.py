@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="가져가구 API",
     version="1.0.0",
-    description="회원/라이더 분리 로그인, 소셜 로그인, 가구 조회·찜, 장바구니/결제/주문, 알림, 제품 등록, AI 유사 스타일 추천을 포함한 REST API",
+    description="회원/라이더 분리 로그인, 가구 조회·찜, 장바구니/결제/주문, 알림, 제품 등록, AI 유사 스타일 추천을 포함한 REST API",
     lifespan=lifespan
 )
 

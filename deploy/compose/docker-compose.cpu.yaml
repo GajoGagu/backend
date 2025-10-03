@@ -40,5 +40,19 @@ services:
       retries: 3
       start_period: 40s
 
+  crud-tests:
+    build:
+      context: ../..
+      dockerfile: docker/crud.Dockerfile
+    image: ghcr.io/gajogagu/myapp-crud:latest
+    container_name: gajogagu_crud_tests
+    env_file:
+      - docker-compose.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["python", "-m", "pytest", "-q"]
+    restart: "no"
+
 volumes:
   postgres_data:

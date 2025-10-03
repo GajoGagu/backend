@@ -106,3 +106,20 @@ docker-compose -f docker-compose.cpu.yaml build --no-cache
 - `start.sh`: 서비스 시작 스크립트
 - `stop.sh`: 서비스 중지 스크립트
 - `init-scripts/`: PostgreSQL 초기화 스크립트 (선택사항)
+
+## 🧪 테스트 실행 (Docker 기반)
+
+### 전체 테스트 실행
+```bash
+docker compose -f docker-compose.cpu.yaml run --rm crud-tests
+```
+
+### 커버리지 포함 상세 모드 실행
+```bash
+docker compose -f docker-compose.cpu.yaml run --rm crud-tests python -m pytest -v --tb=short --cov=. --cov-report=term-missing
+```
+
+### 특정 테스트 파일만 실행
+```bash
+docker compose -f docker-compose.cpu.yaml run --rm crud-tests python -m pytest services/crud-api/tests/test_products.py -v
+```

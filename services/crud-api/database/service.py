@@ -10,7 +10,12 @@ from .models import (
 from .config import get_db
 from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Configure bcrypt to truncate passwords >72 bytes instead of raising ValueError
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__truncate_error=False,
+)
 
 class DatabaseService:
     def __init__(self, db: Session):
@@ -318,21 +323,7 @@ class DatabaseService:
         self.db.commit()
         return updated_count
     
-    def get_or_create_social_user(self, social_id: str, email: str, name: str = None, provider: str = "social") -> User:
-        """Get existing user or create new user for social login"""
-        # Try to find existing user by email first
-        user = self.get_user_by_email(email)
-        
-        if user:
-            return user
-        
-        # Create new user for social login
-        # Use social_id as password (in production, use proper social user handling)
-        return self.create_user(
-            email=email,
-            password=social_id,  # In production, handle social users differently
-            name=name or email.split("@")[0]
-        )
+    # Removed: social login helper (get_or_create_social_user)
     
     # Initialize sample data
     def init_sample_data(self):

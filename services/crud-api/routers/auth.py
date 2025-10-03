@@ -2,12 +2,11 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from models import SignupRequest, LoginRequest, AuthResponse, User, Rider, Tokens, RefreshTokenRequest, LogoutRequest, SocialLoginRequest
+from models import SignupRequest, LoginRequest, AuthResponse, User, Rider, Tokens, RefreshTokenRequest, LogoutRequest
 from database.config import get_db
 from database.service import DatabaseService
 from database.storage import riders_db, active_tokens
 from auth import hash_password, generate_token
-from auth.social_auth import verify_social_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -224,101 +223,3 @@ def logout_user(request: LogoutRequest, db: Session = Depends(get_db)):
     return {"message": "Successfully logged out"}
 
 
-@router.post("/social/google", response_model=AuthResponse)
-async def google_login(request: SocialLoginRequest, db: Session = Depends(get_db)):
-    """Login with Google OAuth"""
-    # Verify Google token
-    social_user = await verify_social_token(request.access_token, "google")
-    
-    if not social_user:
-        raise HTTPException(status_code=401, detail="Invalid Google token")
-    
-    service = DatabaseService(db)
-    
-    # Get or create user
-    user = service.get_or_create_social_user(
-        social_id=social_user["id"],
-        email=social_user["email"],
-        name=social_user["name"],
-        provider="google"
-    )
-    
-    # Generate tokens
-    access_token = generate_token()
-    refresh_token = generate_token()
-    service.add_active_token(
-        user_id=user.id, 
-        token=access_token, 
-        expires_at=datetime.now(timezone.utc) + timedelta(hours=1)
-    )
-    service.add_active_token(
-        user_id=user.id, 
-        token=refresh_token, 
-        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
-    )
-    
-    return AuthResponse(
-        user=User(
-            id=user.id,
-            role=getattr(user, "role", "user"),
-            email=user.email,
-            name=user.name,
-            phone=user.phone,
-            address=user.address,
-            created_at=user.created_at.isoformat() if user.created_at else datetime.now(timezone.utc).isoformat(),
-        ),
-        tokens=Tokens(
-            access_token=access_token,
-            refresh_token=refresh_token
-        )
-    )
-
-
-@router.post("/social/kakao", response_model=AuthResponse)
-async def kakao_login(request: SocialLoginRequest, db: Session = Depends(get_db)):
-    """Login with Kakao OAuth"""
-    # Verify Kakao token
-    social_user = await verify_social_token(request.access_token, "kakao")
-    
-    if not social_user:
-        raise HTTPException(status_code=401, detail="Invalid Kakao token")
-    
-    service = DatabaseService(db)
-    
-    # Get or create user
-    user = service.get_or_create_social_user(
-        social_id=social_user["id"],
-        email=social_user["email"],
-        name=social_user["name"],
-        provider="kakao"
-    )
-    
-    # Generate tokens
-    access_token = generate_token()
-    refresh_token = generate_token()
-    service.add_active_token(
-        user_id=user.id, 
-        token=access_token, 
-        expires_at=datetime.now(timezone.utc) + timedelta(hours=1)
-    )
-    service.add_active_token(
-        user_id=user.id, 
-        token=refresh_token, 
-        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
-    )
-    
-    return AuthResponse(
-        user=User(
-            id=user.id,
-            role=getattr(user, "role", "user"),
-            email=user.email,
-            name=user.name,
-            phone=user.phone,
-            address=user.address,
-            created_at=user.created_at.isoformat() if user.created_at else datetime.now(timezone.utc).isoformat(),
-        ),
-        tokens=Tokens(
-            access_token=access_token,
-            refresh_token=refresh_token
-        )
-    )

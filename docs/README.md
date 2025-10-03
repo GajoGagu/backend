@@ -64,9 +64,6 @@
 ### 인증 관련
 - **토큰 갱신**: `POST /auth/users/refresh` - refresh token으로 새로운 access token 발급
 - **로그아웃**: `POST /auth/users/logout` - access token 무효화
-- **소셜 로그인**: 
-  - `POST /auth/social/google` - Google OAuth 로그인
-  - `POST /auth/social/kakao` - Kakao OAuth 로그인
 
 ### 카테고리
 - **카테고리 단건 조회**: `GET /categories/{category_id}` - 특정 카테고리 정보 조회
@@ -83,6 +80,6 @@
 
 ### 구현 세부사항
 - 모든 엔드포인트는 기존 인증 시스템과 통합되어 있습니다
-- 소셜 로그인은 Google과 Kakao OAuth 2.0을 지원합니다
+ 
 - 업로드 시스템은 로컬 파일 저장을 기본으로 하며, 프로덕션에서는 클라우드 스토리지 연동이 필요합니다
 - 알림 시스템은 데이터베이스 기반으로 구현되어 있습니다

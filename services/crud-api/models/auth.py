@@ -58,13 +58,4 @@ class LogoutRequest(BaseModel):
     access_token: str
 
 
-class SocialLoginRequest(BaseModel):
-    access_token: str
-    provider: str  # "google" or "kakao"
-
-
-class SocialUserInfo(BaseModel):
-    id: str
-    email: str
-    name: Optional[str] = None
-    picture: Optional[str] = None
+pass

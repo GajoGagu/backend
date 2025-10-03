@@ -13,9 +13,8 @@ Two FastAPI services in one monorepo: CRUD API and DL Inference API. Build CPU/G
 - CRUD API: http://localhost:8001
 - DL API: http://localhost:8002  
 
-## Kubernetes (Kustomize)
-- Marketplace: `kubectl apply -k deploy/k8s/overlays/cpu`
-- DL:   `kubectl apply -k deploy/k8s/overlays/gpu`
+## Deployment
+Use Docker Compose for local and server deployments. Kubernetes/Kustomize configs have been removed.
 
 ## Images
 - ghcr.io/gajogagu/myapp-crud:latest (CRUD API)
@@ -23,7 +22,6 @@ Two FastAPI services in one monorepo: CRUD API and DL Inference API. Build CPU/G
 
 ## CRUD API Features
 - **Authentication**: Separate user/rider accounts with JWT tokens
-- **Social Login**: Google/Kakao OAuth integration
 - **Products**: Furniture catalog with categories, search, filters
 - **Wishlist**: Save favorite products
 - **Cart**: Shopping cart with shipping calculations
