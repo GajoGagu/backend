@@ -1,85 +1,39 @@
-# 가져가구 API
+# Gajogagu Server Documentation
 
-이 문서는 현재 코드에 구현된 실제 엔드포인트만을 간단히 나열합니다. 상세 스펙은 각 서비스의 Swagger(`/docs`)에서 확인하세요.
+가구거거 서버 프로젝트의 전체 문서입니다.
 
-## CRUD API
+## 📚 문서 목록
 
-- 헬스체크
-  - GET `/health`
-  - GET `/healthz`
-  - GET `/readyz`
+### 🏗️ 프로젝트 구조
+- [프로젝트 구조](./project-structure.md) - 전체 프로젝트 구조 및 각 디렉토리 설명
 
-- 인증 (`/auth`)
-  - POST `/auth/users/signup`
-  - POST `/auth/users/login`
-  - POST `/auth/riders/signup`
-  - POST `/auth/riders/login`
+### 🐳 Docker & 배포
+- [Docker 실행 가이드](./docker-guide.md) - Docker Compose를 사용한 서비스 실행 방법
+- [배포 가이드](./deployment-guide.md) - 프로덕션 환경 배포 방법
 
-- 사용자 (`/users`)
-  - GET `/users/me`
+### 🔌 API 문서
+- [CRUD API 문서](./crud-api.md) - 메인 API 서버 엔드포인트 및 사용법
+- [DL API 문서](./dl-api.md) - AI 가구 탐지/추천 API 사용법
 
-- 카테고리 (`/categories`)
-  - GET `/categories`
+### 🗄️ 데이터베이스
+- [데이터베이스 스키마](./database-schema.md) - PostgreSQL 데이터베이스 구조
 
-- 상품 (`/products`)
-  - GET `/products`
-  - POST `/products`
-  - GET `/products/{product_id}`
+### 🚀 개발 가이드
+- [개발 환경 설정](./development-setup.md) - 로컬 개발 환경 구축 방법
+- [API 통합 가이드](./api-integration.md) - 두 API 서비스 간 통합 방법
 
-- 찜 (`/wishlist`)
-  - GET `/wishlist`
-  - POST `/wishlist/items` (query: `product_id`)
-  - DELETE `/wishlist/items` (query: `product_id`)
+## 🎯 프로젝트 개요
 
-- 장바구니 (`/cart`)
-  - GET `/cart`
-  - POST `/cart/items` (query: `product_id`, `quantity`)
-  - POST `/cart/clear`
+가구거거 서버는 다음과 같은 마이크로서비스 아키텍처로 구성되어 있습니다:
 
-- 주문 (`/orders`)
-  - POST `/orders`
-  - GET `/orders`
-  - GET `/orders/{order_id}`
-  - PUT `/orders/{order_id}/status`
+- **CRUD API** (포트 8001): 사용자 관리, 제품 관리, 주문 처리 등 핵심 비즈니스 로직
+- **DL API** (포트 8002): AI 기반 가구 탐지 및 추천 시스템
+- **PostgreSQL** (포트 5432): 통합 데이터베이스
 
-- AI (`/ai`)
-  - POST `/ai/style-match`
+## 🛠️ 기술 스택
 
-## DL API
-
-- GET `/healthz`
-- GET `/readyz`
-- POST `/infer`
-- GET `/stream`:
-
-## 참고
-
-- 각 서비스의 Swagger UI: `<BASE_URL>/docs`
-- 테스트용 요청은 `bruno-collection/`에서 확인
-
-## 새로 구현된 엔드포인트
-
-다음 엔드포인트들이 새롭게 구현되었습니다:
-
-### 인증 관련
-- **토큰 갱신**: `POST /auth/users/refresh` - refresh token으로 새로운 access token 발급
-- **로그아웃**: `POST /auth/users/logout` - access token 무효화
-
-### 카테고리
-- **카테고리 단건 조회**: `GET /categories/{category_id}` - 특정 카테고리 정보 조회
-
-### 업로드
-- **Presigned URL**: `POST /uploads/presigned-url` - 파일 업로드용 presigned URL 생성
-- **직접 업로드**: `POST /uploads/` - 파일 직접 업로드
-- **파일 조회**: `GET /uploads/{file_id}` - 업로드된 파일 조회
-
-### 알림
-- **알림 목록**: `GET /notifications` - 사용자 알림 목록 조회 (페이지네이션)
-- **읽음 처리**: `POST /notifications/mark-as-read` - 특정 알림들을 읽음으로 표시
-- **미읽음 개수**: `GET /notifications/unread-count` - 미읽음 알림 개수 조회
-
-### 구현 세부사항
-- 모든 엔드포인트는 기존 인증 시스템과 통합되어 있습니다
- 
-- 업로드 시스템은 로컬 파일 저장을 기본으로 하며, 프로덕션에서는 클라우드 스토리지 연동이 필요합니다
-- 알림 시스템은 데이터베이스 기반으로 구현되어 있습니다
+- **Backend**: FastAPI, Python 3.10+
+- **Database**: PostgreSQL 15
+- **AI/ML**: PyTorch, TensorFlow, Detectron2, OpenCV
+- **Containerization**: Docker, Docker Compose
+- **Deployment**: Docker Swarm (선택사항)

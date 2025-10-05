@@ -15,3 +15,6 @@ services/crud-api/__pycache__/
 **/__pycache__/
 htmlcov/
 .coverage*
+
+# references
+dl-server/
