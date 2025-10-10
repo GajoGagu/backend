@@ -1,4 +1,5 @@
 import uuid
+import os
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends
@@ -84,6 +85,17 @@ def create_product(
         }
 
     # Create via service
+    # Map uploaded images (from S3) using provided file ids if any
+    image_entries = []
+    for fid in (request.image_file_ids or []):
+        # If fid is an S3 key, construct a public URL via base; otherwise accept absolute URL
+        if fid.startswith("http://") or fid.startswith("https://"):
+            image_entries.append({"file_id": fid, "url": fid})
+        else:
+            base = os.getenv("S3_PUBLIC_BASE_URL", "")
+            url = f"{base}/{fid}" if base else fid
+            image_entries.append({"file_id": fid, "url": url})
+
     created = service.create_product(
         title=request.title,
         description=request.description or "",
@@ -92,7 +104,7 @@ def create_product(
         seller_id=current_user["id"],
         location=raw_location,
         attributes=request.attributes or {},
-        images=[],
+        images=image_entries,
     )
 
     # Build API response
