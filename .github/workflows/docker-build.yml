@@ -3,8 +3,9 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'services/**'
-      - 'docker/**'
+      - 'services/crud-api/**'
+      - 'docker/crud.Dockerfile'
+      - 'libs/shared/**'
       - '.github/workflows/docker-build.yml'
 permissions:
   contents: read
@@ -20,11 +21,6 @@ jobs:
             image: ghcr.io/gajogagu/myapp-crud:latest
             context: .
             pathFilter: 'services/crud-api/**'
-          - name: dl
-            dockerfile: docker/dl.Dockerfile
-            image: ghcr.io/gajogagu/myapp-dl:latest
-            context: .
-            pathFilter: 'services/dl-api/**'
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
