@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from database import init_sample_data
 from database.config import create_tables
 from routers import (
-    health_router, auth_router, users_router, categories_router,
+    health_router, auth_router, users_router,
     products_router, wishlist_router, cart_router, ai_router, orders_router
 )
 from routers.notifications import router as notifications_router
@@ -29,7 +29,6 @@ app = FastAPI(
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(users_router)
-app.include_router(categories_router)
 app.include_router(products_router)
 app.include_router(wishlist_router)
 app.include_router(cart_router)

@@ -3,7 +3,7 @@ import asyncio
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from main import app
-from database import users_db, products_db, categories_db, active_tokens
+from database import users_db, products_db, active_tokens
 from database.config import get_db
 from database.service import DatabaseService
 from sqlalchemy import create_engine
@@ -60,13 +60,11 @@ def clean_databases():
     """Clean all in-memory databases before each test."""
     users_db.clear()
     products_db.clear()
-    categories_db.clear()
     active_tokens.clear()
     yield
     # Cleanup after test
     users_db.clear()
     products_db.clear()
-    categories_db.clear()
     active_tokens.clear()
 
 
@@ -80,36 +78,6 @@ def sample_user_data():
         "phone": "010-1234-5678"
     }
 
-
-@pytest.fixture
-def sample_rider_data():
-    """Sample rider data for testing."""
-    return {
-        "email": "rider@example.com",
-        "password": "riderpassword123",
-        "name": "Test Rider",
-        "phone": "010-9876-5432"
-    }
-
-
-@pytest.fixture
-def sample_category(client):
-    """Sample category data for testing."""
-    category_id = "cat-001"
-    category = {
-        "id": category_id,
-        "name": "가구",
-        "parent_id": None
-    }
-    
-    # Create category in database
-    response = client.post("/categories", json=category)
-    if response.status_code != 201:
-        # If category already exists, that's fine
-        print(f"Category creation failed: {response.status_code} - {response.text}")
-        pass
-    
-    return category
 
 
 @pytest.fixture
@@ -143,15 +111,7 @@ def sample_product_data():
 def authenticated_user_token(client, sample_user_data):
     """Create an authenticated user and return access token."""
     # Sign up user
-    response = client.post("/auth/users/signup", json=sample_user_data)
+    response = client.post("/auth/signup", json=sample_user_data)
     assert response.status_code == 201
     return response.json()["tokens"]["access_token"]
 
-
-@pytest.fixture
-def authenticated_rider_token(client, sample_rider_data):
-    """Create an authenticated rider and return access token."""
-    # Sign up rider
-    response = client.post("/auth/riders/signup", json=sample_rider_data)
-    assert response.status_code == 201
-    return response.json()["tokens"]["access_token"]
