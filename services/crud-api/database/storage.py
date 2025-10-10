@@ -22,10 +22,8 @@ def init_sample_data():
     finally:
         db.close()
 
-# Legacy compatibility - these will be replaced by database service
-# Keep for backward compatibility during transition
+# Legacy in-memory stores (kept minimal for backward compatibility if referenced)
 users_db = {}
-riders_db = {}
 products_db = {}
 categories_db = {}
 wishlist_db = {}

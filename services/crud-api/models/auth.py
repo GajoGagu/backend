@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Union
+from typing import Optional
 from .base import Address
 
 
@@ -8,6 +8,7 @@ class SignupRequest(BaseModel):
     password: str = Field(..., min_length=8)
     name: Optional[str] = None
     phone: Optional[str] = None
+    role: Optional[str] = "user"  # unified: user role, default to user
 
 
 class LoginRequest(BaseModel):
@@ -32,21 +33,8 @@ class User(BaseModel):
     created_at: str
 
 
-class Rider(BaseModel):
-    id: str
-    role: str = "rider"
-    email: str
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[Address] = None
-    vehicle_type: str = "car"
-    kakao_open_chat_url: Optional[str] = None
-    rating: float = 0.0
-    created_at: str
-
-
 class AuthResponse(BaseModel):
-    user: Union[User, Rider]
+    user: User
     tokens: Tokens
 
 

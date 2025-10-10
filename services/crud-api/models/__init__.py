@@ -1,5 +1,5 @@
 from .base import Money, Address
-from .auth import SignupRequest, LoginRequest, Tokens, User, Rider, AuthResponse, RefreshTokenRequest, LogoutRequest
+from .auth import SignupRequest, LoginRequest, Tokens, User, AuthResponse, RefreshTokenRequest, LogoutRequest
 from .product import Category, Image, Product, ProductCreate
 from .cart import CartItem, Cart, ShippingQuote
 from .order import OrderItem, Order, OrderCreate, OrderStatusUpdate
@@ -9,7 +9,7 @@ from .upload import PresignedUrlRequest, PresignedUrlResponse, UploadResponse
 
 __all__ = [
     "Money", "Address",
-    "SignupRequest", "LoginRequest", "Tokens", "User", "Rider", "AuthResponse",
+    "SignupRequest", "LoginRequest", "Tokens", "User", "AuthResponse",
     "RefreshTokenRequest", "LogoutRequest",
     "Category", "Image", "Product", "ProductCreate",
     "CartItem", "Cart", "ShippingQuote",

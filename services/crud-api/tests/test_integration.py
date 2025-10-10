@@ -70,8 +70,8 @@ class TestE2EUserFlow:
         assert status_response.status_code == 200
         assert status_response.json()["status"] == "confirmed"
 
-    def test_multi_user_scenario(self, client, sample_user_data, sample_rider_data, sample_category, sample_product_data):
-        """Test scenario with multiple users (user and rider)."""
+    def test_multi_user_scenario(self, client, sample_user_data, sample_category, sample_product_data):
+        """Test scenario with multiple users."""
         # 1. User signup and create product
         user_signup = client.post("/auth/users/signup", json=sample_user_data)
         assert user_signup.status_code == 201
@@ -82,13 +82,7 @@ class TestE2EUserFlow:
         assert create_response.status_code == 201
         product_id = create_response.json()["id"]
         
-        # 2. Rider signup
-        rider_signup = client.post("/auth/riders/signup", json=sample_rider_data)
-        assert rider_signup.status_code == 201
-        rider_token = rider_signup.json()["tokens"]["access_token"]
-        rider_headers = {"Authorization": f"Bearer {rider_token}"}
-        
-        # 3. User adds product to cart and creates order
+        # 2. User adds product to cart and creates order
         cart_response = client.post(f"/cart/items?product_id={product_id}&quantity=1", headers=user_headers)
         assert cart_response.status_code == 201
         
@@ -114,14 +108,7 @@ class TestE2EUserFlow:
         assert order_response.status_code == 201
         order_id = order_response.json()["id"]
         
-        # 4. Verify users can't access each other's data
-        # Rider tries to access user's orders (should get empty list, not 401)
-        rider_orders = client.get("/orders", headers=rider_headers)
-        assert rider_orders.status_code == 200
-        assert len(rider_orders.json()) == 0  # Rider has no orders
-        assert rider_orders.json() == []  # Rider has no orders
-        
-        # User tries to access rider's orders (should be empty)
+        # 3. Verify users can't access each other's data
         user_orders = client.get("/orders", headers=user_headers)
         assert user_orders.status_code == 200
         assert len(user_orders.json()) == 1  # User has one order

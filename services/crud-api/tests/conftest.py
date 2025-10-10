@@ -3,7 +3,7 @@ import asyncio
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from main import app
-from database import users_db, riders_db, products_db, categories_db, active_tokens
+from database import users_db, products_db, categories_db, active_tokens
 from database.config import get_db
 from database.service import DatabaseService
 from sqlalchemy import create_engine
@@ -59,14 +59,12 @@ async def async_client():
 def clean_databases():
     """Clean all in-memory databases before each test."""
     users_db.clear()
-    riders_db.clear()
     products_db.clear()
     categories_db.clear()
     active_tokens.clear()
     yield
     # Cleanup after test
     users_db.clear()
-    riders_db.clear()
     products_db.clear()
     categories_db.clear()
     active_tokens.clear()

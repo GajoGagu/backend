@@ -48,26 +48,7 @@ class TestUserProfile:
         assert profile_user["role"] == signup_user["role"]
         assert profile_user["created_at"] == signup_user["created_at"]
 
-    def test_rider_profile_data(self, client, sample_rider_data):
-        """Test rider profile data structure."""
-        # Sign up rider
-        signup_response = client.post("/auth/riders/signup", json=sample_rider_data)
-        assert signup_response.status_code == 201
-        signup_rider = signup_response.json()["user"]
-        token = signup_response.json()["tokens"]["access_token"]
-        
-        # Get profile
-        headers = {"Authorization": f"Bearer {token}"}
-        profile_response = client.get("/users/me", headers=headers)
-        assert profile_response.status_code == 200
-        profile_rider = profile_response.json()
-        
-        # Check rider-specific fields
-        assert profile_rider["role"] == "rider"
-        assert "vehicle_type" in profile_rider
-        assert "rating" in profile_rider
-        assert profile_rider["vehicle_type"] == "car"
-        assert profile_rider["rating"] == 0.0
+    # Rider profile test removed due to rider removal
 
     def test_user_profile_after_login(self, client, sample_user_data):
         """Test user profile after login."""
