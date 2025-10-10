@@ -3,7 +3,6 @@ from .auth import SignupRequest, LoginRequest, Tokens, User, AuthResponse, Refre
 from .product import Category, Image, Product, ProductCreate
 from .order import OrderItem, Order, OrderCreate, OrderStatusUpdate
 from .notification import Notification, NotificationListResponse, MarkAsReadRequest
-from .ai import AIStyleMatchRequest, AIMatch, AIStyleMatchResult
 from .upload import PresignedUrlRequest, PresignedUrlResponse, UploadResponse
 
 __all__ = [
@@ -13,6 +12,5 @@ __all__ = [
     "Category", "Image", "Product", "ProductCreate",
     "OrderItem", "Order", "OrderCreate", "OrderStatusUpdate",
     "Notification", "NotificationListResponse", "MarkAsReadRequest",
-    "AIStyleMatchRequest", "AIMatch", "AIStyleMatchResult",
     "PresignedUrlRequest", "PresignedUrlResponse", "UploadResponse"
 ]
