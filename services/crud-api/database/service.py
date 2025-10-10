@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import uuid
 from .models import (
     User, Category, Product, Order, OrderItem, 
-    WishlistItem, CartItem, Notification, ActiveToken
+    WishlistItem, Notification, ActiveToken
 )
 from .config import get_db
 from passlib.context import CryptContext
@@ -155,66 +155,7 @@ class DatabaseService:
     def get_user_wishlist(self, user_id: str) -> List[WishlistItem]:
         return self.db.query(WishlistItem).filter(WishlistItem.user_id == user_id).all()
     
-    # Cart operations
-    def add_to_cart(self, user_id: str, product_id: str, quantity: int = 1) -> CartItem:
-        # Check if already in cart
-        existing = self.db.query(CartItem).filter(
-            and_(CartItem.user_id == user_id, CartItem.product_id == product_id)
-        ).first()
-        
-        if existing:
-            existing.quantity += quantity
-            self.db.commit()
-            self.db.refresh(existing)
-            return existing
-        
-        cart_item = CartItem(
-            id=str(uuid.uuid4()),
-            user_id=user_id,
-            product_id=product_id,
-            quantity=quantity
-        )
-        self.db.add(cart_item)
-        self.db.commit()
-        self.db.refresh(cart_item)
-        return cart_item
-    
-    def update_cart_item_quantity(self, user_id: str, product_id: str, quantity: int) -> Optional[CartItem]:
-        item = self.db.query(CartItem).filter(
-            and_(CartItem.user_id == user_id, CartItem.product_id == product_id)
-        ).first()
-        
-        if item:
-            if quantity <= 0:
-                self.db.delete(item)
-            else:
-                item.quantity = quantity
-            self.db.commit()
-            if quantity > 0:
-                self.db.refresh(item)
-                return item
-        return None
-    
-    def remove_from_cart(self, user_id: str, product_id: str) -> bool:
-        item = self.db.query(CartItem).filter(
-            and_(CartItem.user_id == user_id, CartItem.product_id == product_id)
-        ).first()
-        
-        if item:
-            self.db.delete(item)
-            self.db.commit()
-            return True
-        return False
-    
-    def get_user_cart(self, user_id: str) -> List[CartItem]:
-        return self.db.query(CartItem).filter(CartItem.user_id == user_id).all()
-    
-    def clear_user_cart(self, user_id: str) -> bool:
-        items = self.db.query(CartItem).filter(CartItem.user_id == user_id).all()
-        for item in items:
-            self.db.delete(item)
-        self.db.commit()
-        return True
+    # Cart operations removed
     
     # Token operations
     def add_active_token(self, user_id: str, token: str, expires_at: datetime) -> ActiveToken:

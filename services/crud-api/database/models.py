@@ -20,7 +20,6 @@ class User(Base):
     products = relationship("Product", back_populates="seller")
     orders = relationship("Order", back_populates="user")
     wishlist_items = relationship("WishlistItem", back_populates="user")
-    cart_items = relationship("CartItem", back_populates="user")
 
 
 class Category(Base):
@@ -59,7 +58,6 @@ class Product(Base):
     seller = relationship("User", back_populates="products")
     order_items = relationship("OrderItem", back_populates="product")
     wishlist_items = relationship("WishlistItem", back_populates="product")
-    cart_items = relationship("CartItem", back_populates="product")
 
 
 class Order(Base):
@@ -107,19 +105,7 @@ class WishlistItem(Base):
     product = relationship("Product", back_populates="wishlist_items")
 
 
-class CartItem(Base):
-    __tablename__ = "cart_items"
-    
-    id = Column(String, primary_key=True, index=True)
-    user_id = Column(String, ForeignKey("users.id"))
-    product_id = Column(String, ForeignKey("products.id"))
-    quantity = Column(Integer, default=1)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
-    # Relationships
-    user = relationship("User", back_populates="cart_items")
-    product = relationship("Product", back_populates="cart_items")
+## CartItem model removed
 
 
 class Notification(Base):

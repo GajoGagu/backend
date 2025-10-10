@@ -20,30 +20,18 @@ def create_order(
     """Create a new order from cart items using DB."""
     service = DatabaseService(db)
 
-    # Load cart; if empty, use body-provided items to compute totals
-    cart_items = service.get_user_cart(current_user["id"]) or []
-    if not cart_items:
-        body_items = getattr(request, "items", None) or []
-        if not body_items:
-            raise HTTPException(status_code=400, detail="Cart is empty")
-        # compute total based on provided items
-        validated_items = []
-        total_amount = 0
-        for i in body_items:
-            p = service.get_product_by_id(i.product_id)
-            if not p:
-                raise HTTPException(status_code=404, detail="Product not found")
-            total_amount += (p.price_amount * i.quantity)
-            validated_items.append({"product_id": p.id, "quantity": i.quantity, "price": p.price_amount})
-    else:
-        validated_items = []
-        total_amount = 0
-        for ci in cart_items:
-            p = ci.product
-            if not p:
-                continue
-            validated_items.append({"product_id": p.id, "quantity": ci.quantity, "price": p.price_amount})
-            total_amount += p.price_amount * ci.quantity
+    # Compute totals from body-provided items only (cart removed)
+    body_items = getattr(request, "items", None) or []
+    if not body_items:
+        raise HTTPException(status_code=400, detail="Items are required")
+    validated_items = []
+    total_amount = 0
+    for i in body_items:
+        p = service.get_product_by_id(i.product_id)
+        if not p:
+            raise HTTPException(status_code=404, detail="Product not found")
+        total_amount += (p.price_amount * i.quantity)
+        validated_items.append({"product_id": p.id, "quantity": i.quantity, "price": p.price_amount})
 
     computed_shipping = 5000 if total_amount < 100000 else 0
     provided_total = getattr(request, "total_amount", None)
@@ -87,8 +75,7 @@ def create_order(
     db.commit()
     db.refresh(order_row)
 
-    # Clear cart
-    service.clear_user_cart(current_user["id"])
+    # Cart feature removed: nothing to clear
 
     return Order(
         id=order_row.id,

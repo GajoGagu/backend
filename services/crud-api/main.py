@@ -5,7 +5,7 @@ from database import init_sample_data
 from database.config import create_tables
 from routers import (
     health_router, auth_router, users_router,
-    products_router, wishlist_router, cart_router, ai_router, orders_router
+    products_router, wishlist_router, ai_router, orders_router
 )
 from routers.notifications import router as notifications_router
 from routers.uploads import router as uploads_router
@@ -31,7 +31,6 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(products_router)
 app.include_router(wishlist_router)
-app.include_router(cart_router)
 app.include_router(orders_router)
 app.include_router(ai_router)
 app.include_router(notifications_router)

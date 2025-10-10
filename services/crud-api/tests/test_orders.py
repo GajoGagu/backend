@@ -13,11 +13,7 @@ class TestOrderCreation:
         assert create_response.status_code == 201
         product_id = create_response.json()["id"]
         
-        # Add product to cart
-        cart_response = client.post(f"/cart/items?product_id={product_id}&quantity=2", headers=headers)
-        assert cart_response.status_code == 201
-        
-        # Create order
+        # Create order directly
         order_data = {
             "items": [
                 {
@@ -122,22 +118,13 @@ class TestOrderCreation:
         assert response.status_code == 404
         assert "Product not found" in response.json()["detail"]
 
-    def test_create_order_clears_cart(self, client, authenticated_user_token, sample_category, sample_product_data):
-        """Test that order creation clears the cart."""
+    def test_create_order_flow(self, client, authenticated_user_token, sample_category, sample_product_data):
+        """Test order creation end-to-end without cart endpoints."""
         # Create a product first
         headers = {"Authorization": f"Bearer {authenticated_user_token}"}
         create_response = client.post("/products", json=sample_product_data, headers=headers)
         assert create_response.status_code == 201
         product_id = create_response.json()["id"]
-        
-        # Add product to cart
-        cart_response = client.post(f"/cart/items?product_id={product_id}&quantity=2", headers=headers)
-        assert cart_response.status_code == 201
-        
-        # Verify cart has items
-        cart_get_response = client.get("/cart", headers=headers)
-        assert cart_get_response.status_code == 200
-        assert len(cart_get_response.json()["items"]) == 1
         
         # Create order
         order_data = {
@@ -161,10 +148,7 @@ class TestOrderCreation:
         order_response = client.post("/orders", json=order_data, headers=headers)
         assert order_response.status_code == 201
         
-        # Verify cart is now empty
-        cart_get_response = client.get("/cart", headers=headers)
-        assert cart_get_response.status_code == 200
-        assert len(cart_get_response.json()["items"]) == 0
+        # Cart endpoints removed
 
 
 class TestOrderRetrieval:

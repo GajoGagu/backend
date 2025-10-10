@@ -25,9 +25,7 @@ def init_sample_data():
 # Legacy in-memory stores (kept minimal for backward compatibility if referenced)
 users_db = {}
 products_db = {}
-categories_db = {}
 wishlist_db = {}
-cart_db = {}
 orders_db = {}
 notifications_db = {}
 active_tokens = {}
