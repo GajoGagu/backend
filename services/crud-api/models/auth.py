@@ -9,6 +9,7 @@ class SignupRequest(BaseModel):
     name: str
     phone: str
     kakao_open_profile: str  # 카카오톡 오픈프로필 링크
+    address: Address
     role: Optional[str] = "user"  # unified: user role, default to user
 
 
@@ -30,7 +31,7 @@ class User(BaseModel):
     email: str
     name: str
     phone: str
-    address: Optional[Address] = None
+    address: Address
     kakao_open_profile: str
     created_at: str
 

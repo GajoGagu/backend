@@ -102,6 +102,10 @@ class DatabaseService:
     def get_product_by_id(self, product_id: str) -> Optional[Product]:
         return self.db.query(Product).filter(Product.id == product_id).first()
     
+    def get_product_with_seller(self, product_id: str) -> Optional[Product]:
+        """상품과 판매자 정보를 함께 조회"""
+        return self.db.query(Product).join(User, Product.seller_id == User.id).filter(Product.id == product_id).first()
+    
     def create_product(self, title: str, description: str, price_amount: float, 
                       category_id: str, seller_id: str, location: Dict, 
                       attributes: Dict = None, images: List = None) -> Product:

@@ -20,4 +20,15 @@ tests {
     expect(res.getBody()).to.have.property('id');
     expect(res.getBody()).to.have.property('title');
   });
+  
+  test("Response includes seller information", function() {
+    expect(res.getBody()).to.have.property('seller_info');
+    if (res.getBody().seller_info) {
+      expect(res.getBody().seller_info).to.have.property('name');
+      expect(res.getBody().seller_info).to.have.property('address');
+      expect(res.getBody().seller_info).to.have.property('kakao_open_profile');
+      expect(res.getBody().seller_info.name).to.be.a('string');
+      expect(res.getBody().seller_info.kakao_open_profile).to.be.a('string');
+    }
+  });
 }

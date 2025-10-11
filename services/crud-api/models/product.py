@@ -3,6 +3,13 @@ from typing import Dict, List, Optional, Any
 from .base import Money, Address
 
 
+class SellerInfo(BaseModel):
+    """판매자 공개 정보"""
+    name: str
+    address: Address
+    kakao_open_profile: str
+
+
 class Category(BaseModel):
     id: str
     name: str
@@ -24,6 +31,7 @@ class Product(BaseModel):
     images: List[Image] = []
     category: Category
     seller_id: str
+    seller_info: SellerInfo # 판매자 공개 정보
     location: Address
     attributes: Dict[str, Any] = {}
     stock: int = 1

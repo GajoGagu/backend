@@ -19,4 +19,15 @@ tests {
     expect(res.getBody()).to.be.an('object');
     expect(res.getBody()).to.have.property('items');
   });
+  
+  test("Products include seller information", function() {
+    if (res.getBody().items && res.getBody().items.length > 0) {
+      const firstProduct = res.getBody().items[0];
+      expect(firstProduct).to.have.property('seller_info');
+      if (firstProduct.seller_info) {
+        expect(firstProduct.seller_info).to.have.property('name');
+        expect(firstProduct.seller_info).to.have.property('kakao_open_profile');
+      }
+    }
+  });
 }

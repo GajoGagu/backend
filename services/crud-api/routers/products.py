@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from models import Product, ProductCreate
+from models import Product, ProductCreate, SellerInfo
 from database.config import get_db
 from database.service import DatabaseService
 from auth import get_current_user
@@ -30,6 +30,16 @@ def get_products(
 
     items: List[Product] = []
     for p in db_products:
+        # 판매자 정보 가져오기
+        seller = service.get_user_by_id(p.seller_id)
+        seller_info = None
+        if seller:
+            seller_info = SellerInfo(
+                name=seller.name,
+                address=seller.address or {},
+                kakao_open_profile=seller.kakao_open_profile
+            )
+        
         # Build Product model from DB row
         items.append(Product(
             id=p.id,
@@ -39,6 +49,7 @@ def get_products(
             images=p.images or [],
             category={"id": p.category.id if p.category else p.category_id, "name": p.category.name if p.category else "", "parent_id": p.category.parent_id if p.category else None},
             seller_id=p.seller_id,
+            seller_info=seller_info,
             location=p.location or {},
             attributes=p.attributes or {},
             stock=p.stock or 1,
@@ -107,6 +118,16 @@ def create_product(
         images=image_entries,
     )
 
+    # 판매자 정보 가져오기
+    seller = service.get_user_by_id(created.seller_id)
+    seller_info = None
+    if seller:
+        seller_info = SellerInfo(
+            name=seller.name,
+            address=seller.address or {},
+            kakao_open_profile=seller.kakao_open_profile
+        )
+
     # Build API response
     return Product(
         id=created.id,
@@ -116,6 +137,7 @@ def create_product(
         images=created.images or [],
         category={"id": created.category_id, "name": created.category.name if created.category else "", "parent_id": created.category.parent_id if created.category else None},
         seller_id=created.seller_id,
+        seller_info=seller_info,
         location=created.location or {},
         attributes=created.attributes or {},
         stock=created.stock or 1,
@@ -131,6 +153,17 @@ def get_product(product_id: str, db: Session = Depends(get_db)):
     p = service.get_product_by_id(product_id)
     if not p:
         raise HTTPException(status_code=404, detail="Product not found")
+    
+    # 판매자 정보 가져오기
+    seller = service.get_user_by_id(p.seller_id)
+    seller_info = None
+    if seller:
+        seller_info = SellerInfo(
+            name=seller.name,
+            address=seller.address or {},
+            kakao_open_profile=seller.kakao_open_profile
+        )
+    
     return Product(
         id=p.id,
         title=p.title,
@@ -139,6 +172,7 @@ def get_product(product_id: str, db: Session = Depends(get_db)):
         images=p.images or [],
         category={"id": p.category.id if p.category else p.category_id, "name": p.category.name if p.category else "", "parent_id": p.category.parent_id if p.category else None},
         seller_id=p.seller_id,
+        seller_info=seller_info,
         location=p.location or {},
         attributes=p.attributes or {},
         stock=p.stock or 1,
