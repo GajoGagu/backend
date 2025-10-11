@@ -70,7 +70,7 @@ class Order(Base):
     total_amount = Column(Float, nullable=False)
     total_currency = Column(String, default="KRW")
     shipping_address = Column(String)  # 단순한 문자열 주소
-    payment_method = Column(String)
+    delivery_type = Column(String, default="pickup")  # "pickup" 또는 "delivery"
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

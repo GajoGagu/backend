@@ -34,17 +34,21 @@ def create_order(
         total_amount += (p.price_amount * i.quantity)
         validated_items.append({"product_id": p.id, "quantity": i.quantity, "price": p.price_amount})
 
-    computed_shipping = 5000 if total_amount < 100000 else 0
-    provided_total = getattr(request, "total_amount", None)
-    if provided_total is not None:
-        shipping_fee = max(0, float(provided_total) - float(total_amount))
-        total_amount = float(provided_total)
-    else:
-        shipping_fee = computed_shipping
+    # 배송비 계산 (배송 방식일 때만)
+    shipping_fee = 0
+    if request.delivery_type == "delivery":
+        shipping_fee = 5000 if total_amount < 100000 else 0
         total_amount += shipping_fee
 
-    # shipping_address is now a simple string
-    shipping_address = request.shipping_address
+    # 사용자 주소를 배송 주소로 사용
+    user = service.get_user_by_id(current_user["id"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    shipping_address = user.address or "주소 미입력"
+
+    # Validate delivery_type
+    if request.delivery_type not in ["pickup", "delivery"]:
+        raise HTTPException(status_code=400, detail="delivery_type must be 'pickup' or 'delivery'")
 
     # Persist order and items
     order_id = str(uuid.uuid4())
@@ -56,7 +60,7 @@ def create_order(
         total_amount=total_amount,
         total_currency="KRW",
         shipping_address=shipping_address,
-        payment_method=request.payment_method,
+        delivery_type=request.delivery_type,
     )
     db.add(order_row)
     db.flush()
@@ -81,7 +85,7 @@ def create_order(
         total_amount=order_row.total_amount,
         shipping_fee=shipping_fee,
         shipping_address=order_row.shipping_address,
-        payment_method=order_row.payment_method,
+        delivery_type=order_row.delivery_type,
         created_at=order_row.created_at.isoformat() if order_row.created_at else "",
         updated_at=order_row.updated_at.isoformat() if order_row.updated_at else "",
     )
@@ -111,7 +115,7 @@ def get_orders(
             total_amount=r.total_amount,
             shipping_fee=0,  # not stored; computed earlier
             shipping_address=r.shipping_address,
-            payment_method=r.payment_method,
+            delivery_type=r.delivery_type,
             created_at=r.created_at.isoformat() if r.created_at else "",
             updated_at=r.updated_at.isoformat() if r.updated_at else "",
         ))
@@ -139,7 +143,7 @@ def get_order(
         total_amount=r.total_amount,
         shipping_fee=0,
         shipping_address=r.shipping_address,
-        payment_method=r.payment_method,
+        delivery_type=r.delivery_type,
         created_at=r.created_at.isoformat() if r.created_at else "",
         updated_at=r.updated_at.isoformat() if r.updated_at else "",
     )
@@ -158,6 +162,12 @@ def update_order_status(
         raise HTTPException(status_code=404, detail="Order not found")
     if r.user_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Access denied")
+    
+    # 주문 상태 유효성 검사
+    valid_statuses = ["pending", "paid", "shipping", "completed", "cancelled"]
+    if request.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
     r.status = request.status
     db.commit()
     items = db.query(OrderItemModel).filter(OrderItemModel.order_id == r.id).all()
@@ -169,7 +179,7 @@ def update_order_status(
         total_amount=r.total_amount,
         shipping_fee=0,
         shipping_address=r.shipping_address,
-        payment_method=r.payment_method,
+        delivery_type=r.delivery_type,
         created_at=r.created_at.isoformat() if r.created_at else "",
         updated_at=r.updated_at.isoformat() if r.updated_at else "",
     )

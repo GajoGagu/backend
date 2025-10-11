@@ -1,7 +1,7 @@
 meta {
-  name: Update Order Status
+  name: Complete Order
   type: http
-  seq: 3
+  seq: 4
 }
 
 put {
@@ -16,7 +16,7 @@ auth:bearer {
 
 body:json {
   {
-    "status": "paid"
+    "status": "completed"
   }
 }
 
@@ -25,8 +25,8 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
   
-  test("Response has updated order", function() {
+  test("Response has completed order", function() {
     expect(res.getBody()).to.be.an('object');
-    expect(res.getBody().status).to.equal("paid");
+    expect(res.getBody().status).to.equal("completed");
   });
 }

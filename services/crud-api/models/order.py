@@ -19,13 +19,11 @@ class OrderItemCreate(BaseModel):
 
 class OrderCreate(BaseModel):
     items: List[OrderItemCreate]
-    shipping_address: str  # 단순한 문자열 주소
-    payment_method: str
-    total_amount: float
+    delivery_type: str  # "pickup" 또는 "delivery"
 
 
 class OrderStatusUpdate(BaseModel):
-    status: str
+    status: str  # "pending", "paid", "shipping", "completed", "cancelled"
 
 
 class Order(BaseModel):
@@ -36,6 +34,6 @@ class Order(BaseModel):
     total_amount: float
     shipping_fee: float
     shipping_address: str  # 단순한 문자열 주소
-    payment_method: str
+    delivery_type: str  # "pickup" 또는 "delivery"
     created_at: str
     updated_at: str

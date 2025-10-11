@@ -369,7 +369,8 @@ class DatabaseService:
     def get_available_orders_for_delivery(self) -> List[Order]:
         """배송 가능한 주문 목록 조회 (라이더용)"""
         return self.db.query(Order).filter(
-            Order.status == "pending"  # 배송 대기 중인 주문
+            Order.status.in_(["pending", "paid"]),  # 결제 대기 중이거나 결제 완료된 주문
+            Order.delivery_type == "delivery"  # 배송 요청된 주문만
         ).all()
     
     def get_order_with_details(self, order_id: str) -> Optional[Order]:
