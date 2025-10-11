@@ -75,7 +75,16 @@ def create_order(
     db.commit()
     db.refresh(order_row)
 
-    # Cart feature removed: nothing to clear
+    # 판매자에게 주문 알림 전송
+    for item in validated_items:
+        product = service.get_product_by_id(item["product_id"])
+        if product and product.seller_id:
+            service.create_notification(
+                user_id=product.seller_id,
+                title="새로운 주문이 들어왔습니다!",
+                message=f"상품 '{product.title}'에 대한 새로운 주문이 생성되었습니다. 카카오톡으로 구매자와 연락해주세요.",
+                type="order"
+            )
 
     return Order(
         id=order_row.id,
@@ -170,6 +179,23 @@ def update_order_status(
     
     r.status = request.status
     db.commit()
+    
+    # 주문 상태 변경 시 구매자에게 알림 전송
+    status_messages = {
+        "paid": "결제가 확인되었습니다!",
+        "shipping": "배송이 시작되었습니다!",
+        "completed": "구매가 완료되었습니다!",
+        "cancelled": "주문이 취소되었습니다."
+    }
+    
+    if request.status in status_messages:
+        service.create_notification(
+            user_id=r.user_id,
+            title=status_messages[request.status],
+            message=f"주문 #{r.id[:8]}...의 상태가 '{request.status}'로 변경되었습니다.",
+            type="order_status"
+        )
+    
     items = db.query(OrderItemModel).filter(OrderItemModel.order_id == r.id).all()
     return Order(
         id=r.id,

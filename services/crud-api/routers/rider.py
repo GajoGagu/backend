@@ -114,6 +114,16 @@ def create_delivery_request(
             delivery_fee=request.delivery_fee
         )
         
+        # 구매자에게 라이더 배송 신청 알림 전송
+        order = service.get_order_with_details(request.order_id)
+        if order:
+            service.create_notification(
+                user_id=order.user_id,
+                title="라이더가 배송을 신청했습니다!",
+                message=f"주문 #{request.order_id[:8]}...에 대한 라이더 배송 신청이 들어왔습니다. 배송비: {request.delivery_fee:,}원",
+                type="delivery_request"
+            )
+        
         # 판매자와 구매자 정보를 User 모델로 변환
         seller_info = User(
             id=delivery.seller_info["id"],

@@ -110,6 +110,14 @@ def accept_rider_delivery(
     order.status = "shipping"
     db.commit()
     
+    # 라이더에게 배송 승락 알림 전송
+    service.create_notification(
+        user_id=updated_delivery.rider_id,
+        title="배송 신청이 승락되었습니다!",
+        message=f"주문 #{order_id[:8]}...의 배송 신청이 승락되었습니다. 배송을 시작해주세요.",
+        type="delivery"
+    )
+    
     # 판매자와 구매자 정보를 User 모델로 변환
     seller_info = User(
         id=updated_delivery.seller_info["id"],
@@ -179,6 +187,14 @@ def reject_rider_delivery(
     updated_delivery = service.update_delivery_status(delivery_id, "rejected")
     if not updated_delivery:
         raise HTTPException(status_code=500, detail="Failed to reject delivery request")
+    
+    # 라이더에게 배송 거절 알림 전송
+    service.create_notification(
+        user_id=updated_delivery.rider_id,
+        title="배송 신청이 거절되었습니다",
+        message=f"주문 #{order_id[:8]}...의 배송 신청이 거절되었습니다.",
+        type="delivery"
+    )
     
     # 판매자와 구매자 정보를 User 모델로 변환
     seller_info = User(
