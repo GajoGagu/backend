@@ -1,0 +1,33 @@
+meta {
+  name: Delete User Account
+  type: http
+  seq: 3
+}
+
+delete {
+  url: http://localhost:8001/users/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "password": "password123"
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response confirms account deletion", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody()).to.have.property('message');
+    expect(res.getBody().message).to.equal("Account deleted successfully");
+  });
+}

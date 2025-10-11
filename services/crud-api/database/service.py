@@ -228,6 +228,40 @@ class DatabaseService:
         self.db.commit()
         return True
     
+    def update_user(self, user_id: str, name: str = None, phone: str = None, 
+                   kakao_open_profile: str = None, address: dict = None) -> Optional[User]:
+        """Update user information"""
+        user = self.get_user_by_id(user_id)
+        if not user:
+            return None
+        
+        if name is not None:
+            user.name = name
+        if phone is not None:
+            user.phone = phone
+        if kakao_open_profile is not None:
+            user.kakao_open_profile = kakao_open_profile
+        if address is not None:
+            user.address = address
+        
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+    
+    def delete_user(self, user_id: str) -> bool:
+        """Delete user and all related data"""
+        user = self.get_user_by_id(user_id)
+        if not user:
+            return False
+        
+        # Revoke all tokens first
+        self.revoke_user_tokens(user_id)
+        
+        # Delete user (cascade will handle related data)
+        self.db.delete(user)
+        self.db.commit()
+        return True
+    
     # Notification operations
     def create_notification(self, user_id: str, title: str, message: str, type: str = "info") -> Notification:
         """Create a new notification for a user"""

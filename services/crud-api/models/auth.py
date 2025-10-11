@@ -48,4 +48,12 @@ class LogoutRequest(BaseModel):
     access_token: str
 
 
-pass
+class UpdateUserRequest(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    kakao_open_profile: Optional[str] = None
+    address: Optional[Address] = None
+
+
+class DeleteUserRequest(BaseModel):
+    password: str  # 탈퇴 확인을 위한 비밀번호
