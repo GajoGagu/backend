@@ -48,6 +48,7 @@ def get_current_user(
         "name": user.name,
         "phone": user.phone,
         "address": user.address,
+        "kakao_open_profile": user.kakao_open_profile,
         "created_at": user.created_at.isoformat() if user.created_at else None,
     }
     return data

@@ -11,9 +11,10 @@ class User(Base):
     role = Column(String, default="user")
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    name = Column(String)
-    phone = Column(String)
+    name = Column(String, nullable=False)
+    phone = Column(String, nullable=False)
     address = Column(JSON)  # Store as JSON
+    kakao_open_profile = Column(String, nullable=False)  # 카카오톡 오픈프로필 링크
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships

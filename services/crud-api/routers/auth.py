@@ -22,6 +22,7 @@ def signup(request: SignupRequest, db: Session = Depends(get_db)):
         password=request.password,
         name=request.name,
         phone=request.phone,
+        kakao_open_profile=request.kakao_open_profile,
         role=request.role or "user",
     )
 
@@ -38,6 +39,7 @@ def signup(request: SignupRequest, db: Session = Depends(get_db)):
             name=created.name,
             phone=created.phone,
             address=created.address,
+            kakao_open_profile=created.kakao_open_profile,
             created_at=created.created_at.isoformat() if created.created_at else datetime.now(timezone.utc).isoformat(),
         ),
         tokens=Tokens(
@@ -67,6 +69,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
             name=user.name,
             phone=user.phone,
             address=user.address,
+            kakao_open_profile=user.kakao_open_profile,
             created_at=user.created_at.isoformat() if user.created_at else datetime.now(timezone.utc).isoformat(),
         ),
         tokens=Tokens(
@@ -120,6 +123,7 @@ def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_db)):
             name=user.name,
             phone=user.phone,
             address=user.address,
+            kakao_open_profile=user.kakao_open_profile,
             created_at=user.created_at.isoformat() if user.created_at else datetime.now(timezone.utc).isoformat(),
         ),
         tokens=Tokens(

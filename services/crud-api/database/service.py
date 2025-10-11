@@ -22,7 +22,7 @@ class DatabaseService:
         self.db = db
     
     # User operations
-    def create_user(self, email: str, password: str, name: str = None, phone: str = None, role: str = "user") -> User:
+    def create_user(self, email: str, password: str, name: str, phone: str, kakao_open_profile: str, role: str = "user") -> User:
         user_id = str(uuid.uuid4())
         password_hash = pwd_context.hash(password)
         
@@ -32,6 +32,7 @@ class DatabaseService:
             password_hash=password_hash,
             name=name,
             phone=phone,
+            kakao_open_profile=kakao_open_profile,
             role=role
         )
         self.db.add(user)

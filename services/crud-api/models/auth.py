@@ -6,8 +6,9 @@ from .base import Address
 class SignupRequest(BaseModel):
     email: str
     password: str = Field(..., min_length=8)
-    name: Optional[str] = None
-    phone: Optional[str] = None
+    name: str
+    phone: str
+    kakao_open_profile: str  # 카카오톡 오픈프로필 링크
     role: Optional[str] = "user"  # unified: user role, default to user
 
 
@@ -27,9 +28,10 @@ class User(BaseModel):
     id: str
     role: str = "user"
     email: str
-    name: Optional[str] = None
-    phone: Optional[str] = None
+    name: str
+    phone: str
     address: Optional[Address] = None
+    kakao_open_profile: str
     created_at: str
 
 
