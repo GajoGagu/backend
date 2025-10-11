@@ -77,6 +77,7 @@ class Order(Base):
     # Relationships
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order")
+    rider_deliveries = relationship("RiderDelivery", back_populates="order")
 
 
 class OrderItem(Base):
@@ -129,3 +130,21 @@ class ActiveToken(Base):
     token = Column(String, unique=True, index=True)
     expires_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class RiderDelivery(Base):
+    __tablename__ = "rider_deliveries"
+    
+    id = Column(String, primary_key=True, index=True)
+    order_id = Column(String, ForeignKey("orders.id"), nullable=False)
+    rider_id = Column(String, ForeignKey("users.id"), nullable=False)
+    delivery_fee = Column(Float, nullable=False)  # 라이더가 제안한 배송비
+    status = Column(String, default="pending")  # pending, accepted, rejected, in_progress, completed
+    seller_info = Column(JSON)  # 판매자 정보 (이름, 주소, 카카오톡 URL)
+    buyer_info = Column(JSON)   # 구매자 정보 (이름, 주소, 카카오톡 URL)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    order = relationship("Order", back_populates="rider_deliveries")
+    rider = relationship("User", foreign_keys=[rider_id])

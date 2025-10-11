@@ -9,6 +9,8 @@ from routers import (
 )
 from routers.notifications import router as notifications_router
 from routers.uploads import router as uploads_router
+from routers.rider import router as rider_router
+from routers.order_rider import router as order_rider_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +36,8 @@ app.include_router(wishlist_router)
 app.include_router(orders_router)
 app.include_router(notifications_router)
 app.include_router(uploads_router)
+app.include_router(rider_router)
+app.include_router(order_rider_router)
 
 
 if __name__ == "__main__":

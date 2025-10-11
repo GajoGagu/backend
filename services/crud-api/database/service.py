@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import uuid
 from .models import (
     User, Category, Product, Order, OrderItem, 
-    WishlistItem, Notification, ActiveToken
+    WishlistItem, Notification, ActiveToken, RiderDelivery
 )
 from .config import get_db
 from passlib.context import CryptContext
@@ -364,3 +364,100 @@ class DatabaseService:
         self.db.add(product1)
         
         self.db.commit()
+    
+    # Rider operations
+    def get_available_orders_for_delivery(self) -> List[Order]:
+        """배송 가능한 주문 목록 조회 (라이더용)"""
+        return self.db.query(Order).filter(
+            Order.status == "pending"  # 배송 대기 중인 주문
+        ).all()
+    
+    def get_order_with_details(self, order_id: str) -> Optional[Order]:
+        """주문과 관련된 모든 정보를 포함하여 조회"""
+        return self.db.query(Order).filter(Order.id == order_id).first()
+    
+    def create_rider_delivery(self, order_id: str, rider_id: str, delivery_fee: float) -> RiderDelivery:
+        """라이더 배송 신청 생성"""
+        # 주문 정보 가져오기
+        order = self.get_order_with_details(order_id)
+        if not order:
+            raise ValueError("Order not found")
+        
+        # 구매자 정보 가져오기
+        buyer = self.get_user_by_id(order.user_id)
+        if not buyer:
+            raise ValueError("Buyer not found")
+        
+        # 판매자 정보 가져오기 (첫 번째 상품의 판매자)
+        if not order.items:
+            raise ValueError("Order has no items")
+        
+        first_item = order.items[0]
+        product = self.get_product_by_id(first_item.product_id)
+        if not product:
+            raise ValueError("Product not found")
+        
+        seller = self.get_user_by_id(product.seller_id)
+        if not seller:
+            raise ValueError("Seller not found")
+        
+        # 판매자와 구매자 정보를 JSON으로 저장
+        seller_info = {
+            "id": seller.id,
+            "name": seller.name,
+            "phone": seller.phone,
+            "address": seller.address,
+            "kakao_open_profile": seller.kakao_open_profile
+        }
+        
+        buyer_info = {
+            "id": buyer.id,
+            "name": buyer.name,
+            "phone": buyer.phone,
+            "address": order.shipping_address,  # 배송 주소 사용
+            "kakao_open_profile": buyer.kakao_open_profile
+        }
+        
+        # 라이더 배송 신청 생성
+        rider_delivery = RiderDelivery(
+            id=str(uuid.uuid4()),
+            order_id=order_id,
+            rider_id=rider_id,
+            delivery_fee=delivery_fee,
+            seller_info=seller_info,
+            buyer_info=buyer_info
+        )
+        
+        self.db.add(rider_delivery)
+        self.db.commit()
+        self.db.refresh(rider_delivery)
+        return rider_delivery
+    
+    def get_rider_deliveries(self, rider_id: str) -> List[RiderDelivery]:
+        """라이더의 배송 신청 목록 조회"""
+        return self.db.query(RiderDelivery).filter(
+            RiderDelivery.rider_id == rider_id
+        ).order_by(RiderDelivery.created_at.desc()).all()
+    
+    def get_rider_delivery_by_id(self, delivery_id: str) -> Optional[RiderDelivery]:
+        """라이더 배송 신청 상세 조회"""
+        return self.db.query(RiderDelivery).filter(RiderDelivery.id == delivery_id).first()
+    
+    def update_delivery_status(self, delivery_id: str, status: str) -> Optional[RiderDelivery]:
+        """배송 상태 업데이트"""
+        delivery = self.get_rider_delivery_by_id(delivery_id)
+        if not delivery:
+            return None
+        
+        delivery.status = status
+        delivery.updated_at = datetime.now(timezone.utc)
+        
+        self.db.commit()
+        self.db.refresh(delivery)
+        return delivery
+    
+    def get_order_rider_deliveries(self, order_id: str) -> List[RiderDelivery]:
+        """특정 주문의 라이더 배송 신청 목록 조회"""
+        return self.db.query(RiderDelivery).filter(
+            RiderDelivery.order_id == order_id
+        ).order_by(RiderDelivery.created_at.desc()).all()

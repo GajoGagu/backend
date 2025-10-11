@@ -1,0 +1,53 @@
+meta {
+  name: Get Order Rider Deliveries
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8001/orders/{{order_id}}/rider-deliveries
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has items and total", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody()).to.have.property('items');
+    expect(res.getBody()).to.have.property('total');
+    expect(res.getBody().items).to.be.an('array');
+  });
+  
+  test("Each delivery has required fields", function() {
+    if (res.getBody().items.length > 0) {
+      const delivery = res.getBody().items[0];
+      expect(delivery).to.have.property('id');
+      expect(delivery).to.have.property('order_id');
+      expect(delivery).to.have.property('rider_id');
+      expect(delivery).to.have.property('delivery_fee');
+      expect(delivery).to.have.property('status');
+      expect(delivery).to.have.property('seller_info');
+      expect(delivery).to.have.property('buyer_info');
+    }
+  });
+  
+  test("Seller and buyer info include contact details", function() {
+    if (res.getBody().items.length > 0) {
+      const delivery = res.getBody().items[0];
+      expect(delivery.seller_info).to.have.property('name');
+      expect(delivery.seller_info).to.have.property('address');
+      expect(delivery.seller_info).to.have.property('kakao_open_profile');
+      expect(delivery.buyer_info).to.have.property('name');
+      expect(delivery.buyer_info).to.have.property('address');
+      expect(delivery.buyer_info).to.have.property('kakao_open_profile');
+    }
+  });
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Accept Rider Delivery
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:8001/orders/{{order_id}}/rider-delivery/{{delivery_request_id}}/accept
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has accepted delivery data", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody()).to.have.property('id');
+    expect(res.getBody()).to.have.property('status');
+    expect(res.getBody().status).to.equal('accepted');
+  });
+}

@@ -1,0 +1,44 @@
+meta {
+  name: Create Delivery Request
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8001/rider/delivery-request
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{rider_access_token}}
+}
+
+body:json {
+  {
+    "order_id": "{{order_id}}",
+    "delivery_fee": 5000
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response has delivery request data", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody()).to.have.property('id');
+    expect(res.getBody()).to.have.property('order_id');
+    expect(res.getBody()).to.have.property('rider_id');
+    expect(res.getBody()).to.have.property('delivery_fee');
+    expect(res.getBody()).to.have.property('status');
+    expect(res.getBody().status).to.equal('pending');
+  });
+  
+  test("Save delivery request ID", function() {
+    if (res.getStatus() === 201) {
+      bru.setVar("delivery_request_id", res.getBody().id);
+    }
+  });
+}
