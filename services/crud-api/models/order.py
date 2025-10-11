@@ -19,8 +19,7 @@ class OrderItemCreate(BaseModel):
 
 class OrderCreate(BaseModel):
     items: List[OrderItemCreate]
-    # Accept flexible structure used by tests
-    shipping_address: Dict
+    shipping_address: str  # 단순한 문자열 주소
     payment_method: str
     total_amount: float
 
@@ -36,7 +35,7 @@ class Order(BaseModel):
     items: List[Dict]  # Simplified for now
     total_amount: float
     shipping_fee: float
-    shipping_address: Dict
+    shipping_address: str  # 단순한 문자열 주소
     payment_method: str
     created_at: str
     updated_at: str

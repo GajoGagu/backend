@@ -43,13 +43,8 @@ def create_order(
         shipping_fee = computed_shipping
         total_amount += shipping_fee
 
-    # Normalize shipping address
+    # shipping_address is now a simple string
     shipping_address = request.shipping_address
-    try:
-        shipping_address = shipping_address.model_dump()
-    except Exception:
-        if hasattr(shipping_address, "dict"):
-            shipping_address = shipping_address.dict()
 
     # Persist order and items
     order_id = str(uuid.uuid4())

@@ -406,7 +406,7 @@ class DatabaseService:
             "id": seller.id,
             "name": seller.name,
             "phone": seller.phone,
-            "address": seller.address,
+            "address": seller.address,  # 단순한 문자열 주소
             "kakao_open_profile": seller.kakao_open_profile
         }
         
@@ -414,7 +414,7 @@ class DatabaseService:
             "id": buyer.id,
             "name": buyer.name,
             "phone": buyer.phone,
-            "address": order.shipping_address,  # 배송 주소 사용
+            "address": order.shipping_address,  # 배송 주소 사용 (단순한 문자열)
             "kakao_open_profile": buyer.kakao_open_profile
         }
         

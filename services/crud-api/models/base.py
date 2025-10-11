@@ -8,9 +8,4 @@ class Money(BaseModel):
 
 
 class Address(BaseModel):
-    postcode: str
-    line1: str
-    line2: Optional[str] = None
-    city: str
-    region: str
-    country: str = "KR"
+    address: str  # 자유롭게 입력하는 주소

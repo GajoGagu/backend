@@ -13,7 +13,7 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
-    address = Column(JSON)  # Store as JSON
+    address = Column(String)  # 자유롭게 입력하는 주소
     kakao_open_profile = Column(String, nullable=False)  # 카카오톡 오픈프로필 링크
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
@@ -47,7 +47,7 @@ class Product(Base):
     images = Column(JSON)  # Store as JSON array
     category_id = Column(String, ForeignKey("categories.id"))
     seller_id = Column(String, ForeignKey("users.id"))
-    location = Column(JSON)  # Store as JSON
+    location = Column(String)  # 단순한 문자열 주소
     attributes = Column(JSON)  # Store as JSON
     stock = Column(Integer, default=1)
     is_featured = Column(Boolean, default=False)
@@ -69,7 +69,7 @@ class Order(Base):
     status = Column(String, default="pending")
     total_amount = Column(Float, nullable=False)
     total_currency = Column(String, default="KRW")
-    shipping_address = Column(JSON)
+    shipping_address = Column(String)  # 단순한 문자열 주소
     payment_method = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -50,7 +50,7 @@ def get_products(
             category={"id": p.category.id if p.category else p.category_id, "name": p.category.name if p.category else "", "parent_id": p.category.parent_id if p.category else None},
             seller_id=p.seller_id,
             seller_info=seller_info,
-            location=p.location or {},
+            location=p.location or "",
             attributes=p.attributes or {},
             stock=p.stock or 1,
             is_featured=bool(p.is_featured),
@@ -83,17 +83,8 @@ def create_product(
     if not category:
         raise HTTPException(status_code=400, detail="Invalid category")
 
-    # Normalize location to Address-like dict if minimal fields provided
-    raw_location = getattr(request.location, "model_dump", lambda: request.location)()
-    if "postcode" not in raw_location:
-        raw_location = {
-            "postcode": raw_location.get("postal_code", ""),
-            "line1": raw_location.get("line1") or raw_location.get("address", ""),
-            "line2": raw_location.get("line2"),
-            "city": raw_location.get("city", ""),
-            "region": raw_location.get("region", ""),
-            "country": raw_location.get("country", "KR")
-        }
+    # location is now a simple string
+    raw_location = request.location
 
     # Create via service
     # Map uploaded images (from S3) using provided file ids if any
@@ -138,7 +129,7 @@ def create_product(
         category={"id": created.category_id, "name": created.category.name if created.category else "", "parent_id": created.category.parent_id if created.category else None},
         seller_id=created.seller_id,
         seller_info=seller_info,
-        location=created.location or {},
+        location=created.location or "",
         attributes=created.attributes or {},
         stock=created.stock or 1,
         is_featured=bool(created.is_featured),
@@ -173,7 +164,7 @@ def get_product(product_id: str, db: Session = Depends(get_db)):
         category={"id": p.category.id if p.category else p.category_id, "name": p.category.name if p.category else "", "parent_id": p.category.parent_id if p.category else None},
         seller_id=p.seller_id,
         seller_info=seller_info,
-        location=p.location or {},
+        location=p.location or "",
         attributes=p.attributes or {},
         stock=p.stock or 1,
         is_featured=bool(p.is_featured),

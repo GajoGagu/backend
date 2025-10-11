@@ -32,7 +32,7 @@ class Product(BaseModel):
     category: Category
     seller_id: str
     seller_info: SellerInfo # 판매자 공개 정보
-    location: Address
+    location: str  # 단순한 문자열 주소
     attributes: Dict[str, Any] = {}
     stock: int = 1
     is_featured: bool = False
@@ -45,6 +45,6 @@ class ProductCreate(BaseModel):
     description: Optional[str] = None
     price: Money
     category_id: str
-    location: Dict[str, Any]
+    location: str  # 단순한 문자열 주소
     attributes: Dict[str, Any] = {}
     image_file_ids: List[str] = []
