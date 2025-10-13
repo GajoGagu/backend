@@ -18,6 +18,22 @@ tests {
   test("Response shape", function() {
     expect(res.getBody()).to.be.an('object');
     expect(res.getBody()).to.have.property('items');
+    expect(res.getBody()).to.have.property('total');
+    expect(res.getBody()).to.have.property('page');
+    expect(res.getBody()).to.have.property('page_size');
+  });
+  
+  test("Products include required fields", function() {
+    if (res.getBody().items && res.getBody().items.length > 0) {
+      const firstProduct = res.getBody().items[0];
+      expect(firstProduct).to.have.property('id');
+      expect(firstProduct).to.have.property('title');
+      expect(firstProduct).to.have.property('price');
+      expect(firstProduct).to.have.property('category');
+      expect(firstProduct).to.have.property('seller_info');
+      expect(firstProduct).to.have.property('location');
+      expect(firstProduct).to.have.property('attributes');
+    }
   });
   
   test("Products include seller information", function() {
@@ -26,6 +42,7 @@ tests {
       expect(firstProduct).to.have.property('seller_info');
       if (firstProduct.seller_info) {
         expect(firstProduct.seller_info).to.have.property('name');
+        expect(firstProduct.seller_info).to.have.property('address');
         expect(firstProduct.seller_info).to.have.property('kakao_open_profile');
       }
     }

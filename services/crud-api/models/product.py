@@ -6,7 +6,7 @@ from .base import Money, Address
 class SellerInfo(BaseModel):
     """판매자 공개 정보"""
     name: str
-    address: Address
+    address: str  # 단순한 문자열 주소
     kakao_open_profile: str
 
 
@@ -30,8 +30,8 @@ class Product(BaseModel):
     price: Money
     images: List[Image] = []
     category: Category
-    seller_id: str
-    seller_info: SellerInfo # 판매자 공개 정보
+    seller_id: Optional[str] = None
+    seller_info: Optional[SellerInfo] = None  # 판매자 공개 정보
     location: str  # 단순한 문자열 주소
     attributes: Dict[str, Any] = {}
     stock: int = 1

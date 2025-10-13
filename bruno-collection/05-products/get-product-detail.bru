@@ -19,6 +19,15 @@ tests {
     expect(res.getBody()).to.be.an('object');
     expect(res.getBody()).to.have.property('id');
     expect(res.getBody()).to.have.property('title');
+    expect(res.getBody()).to.have.property('description');
+    expect(res.getBody()).to.have.property('price');
+    expect(res.getBody()).to.have.property('category');
+    expect(res.getBody()).to.have.property('location');
+    expect(res.getBody()).to.have.property('attributes');
+    expect(res.getBody()).to.have.property('stock');
+    expect(res.getBody()).to.have.property('is_featured');
+    expect(res.getBody()).to.have.property('likes_count');
+    expect(res.getBody()).to.have.property('created_at');
   });
   
   test("Response includes seller information", function() {
@@ -28,7 +37,15 @@ tests {
       expect(res.getBody().seller_info).to.have.property('address');
       expect(res.getBody().seller_info).to.have.property('kakao_open_profile');
       expect(res.getBody().seller_info.name).to.be.a('string');
+      expect(res.getBody().seller_info.address).to.be.a('string');
       expect(res.getBody().seller_info.kakao_open_profile).to.be.a('string');
     }
+  });
+  
+  test("Price structure is correct", function() {
+    expect(res.getBody().price).to.have.property('currency');
+    expect(res.getBody().price).to.have.property('amount');
+    expect(res.getBody().price.currency).to.equal('KRW');
+    expect(res.getBody().price.amount).to.be.a('number');
   });
 }

@@ -31,14 +31,37 @@ def get_products(
     items: List[Product] = []
     for p in db_products:
         # 판매자 정보 가져오기
-        seller = service.get_user_by_id(p.seller_id)
         seller_info = None
-        if seller:
-            seller_info = SellerInfo(
-                name=seller.name,
-                address=seller.address or {},
-                kakao_open_profile=seller.kakao_open_profile
-            )
+        if p.seller_id:
+            seller = service.get_user_by_id(p.seller_id)
+            if seller:
+                seller_info = SellerInfo(
+                    name=seller.name,
+                    address=seller.address or "",
+                    kakao_open_profile=seller.kakao_open_profile
+                )
+        
+        # Parse JSON fields
+        import json
+        images = []
+        if p.images:
+            if isinstance(p.images, str):
+                try:
+                    images = json.loads(p.images)
+                except:
+                    images = []
+            else:
+                images = p.images or []
+        
+        attributes = {}
+        if p.attributes:
+            if isinstance(p.attributes, str):
+                try:
+                    attributes = json.loads(p.attributes)
+                except:
+                    attributes = {}
+            else:
+                attributes = p.attributes or {}
         
         # Build Product model from DB row
         items.append(Product(
@@ -46,12 +69,12 @@ def get_products(
             title=p.title,
             description=p.description,
             price={"currency": p.price_currency, "amount": p.price_amount},
-            images=p.images or [],
+            images=images,
             category={"id": p.category.id if p.category else p.category_id, "name": p.category.name if p.category else "", "parent_id": p.category.parent_id if p.category else None},
             seller_id=p.seller_id,
             seller_info=seller_info,
             location=p.location or "",
-            attributes=p.attributes or {},
+            attributes=attributes,
             stock=p.stock or 1,
             is_featured=bool(p.is_featured),
             likes_count=p.likes_count or 0,
@@ -110,14 +133,37 @@ def create_product(
     )
 
     # 판매자 정보 가져오기
-    seller = service.get_user_by_id(created.seller_id)
     seller_info = None
-    if seller:
-        seller_info = SellerInfo(
-            name=seller.name,
-            address=seller.address or {},
-            kakao_open_profile=seller.kakao_open_profile
-        )
+    if created.seller_id:
+        seller = service.get_user_by_id(created.seller_id)
+        if seller:
+            seller_info = SellerInfo(
+                name=seller.name,
+                address=seller.address or "",
+                kakao_open_profile=seller.kakao_open_profile
+            )
+
+    # Parse JSON fields for response
+    import json
+    images = []
+    if created.images:
+        if isinstance(created.images, str):
+            try:
+                images = json.loads(created.images)
+            except:
+                images = []
+        else:
+            images = created.images or []
+    
+    attributes = {}
+    if created.attributes:
+        if isinstance(created.attributes, str):
+            try:
+                attributes = json.loads(created.attributes)
+            except:
+                attributes = {}
+        else:
+            attributes = created.attributes or {}
 
     # Build API response
     return Product(
@@ -125,12 +171,12 @@ def create_product(
         title=created.title,
         description=created.description,
         price={"currency": created.price_currency, "amount": created.price_amount},
-        images=created.images or [],
+        images=images,
         category={"id": created.category_id, "name": created.category.name if created.category else "", "parent_id": created.category.parent_id if created.category else None},
         seller_id=created.seller_id,
         seller_info=seller_info,
         location=created.location or "",
-        attributes=created.attributes or {},
+        attributes=attributes,
         stock=created.stock or 1,
         is_featured=bool(created.is_featured),
         likes_count=created.likes_count or 0,
@@ -146,26 +192,49 @@ def get_product(product_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     
     # 판매자 정보 가져오기
-    seller = service.get_user_by_id(p.seller_id)
     seller_info = None
-    if seller:
-        seller_info = SellerInfo(
-            name=seller.name,
-            address=seller.address or {},
-            kakao_open_profile=seller.kakao_open_profile
-        )
+    if p.seller_id:
+        seller = service.get_user_by_id(p.seller_id)
+        if seller:
+            seller_info = SellerInfo(
+                name=seller.name,
+                address=seller.address or "",
+                kakao_open_profile=seller.kakao_open_profile
+            )
     
+    # Parse JSON fields
+    import json
+    images = []
+    if p.images:
+        if isinstance(p.images, str):
+            try:
+                images = json.loads(p.images)
+            except:
+                images = []
+        else:
+            images = p.images or []
+    
+    attributes = {}
+    if p.attributes:
+        if isinstance(p.attributes, str):
+            try:
+                attributes = json.loads(p.attributes)
+            except:
+                attributes = {}
+        else:
+            attributes = p.attributes or {}
+
     return Product(
         id=p.id,
         title=p.title,
         description=p.description,
         price={"currency": p.price_currency, "amount": p.price_amount},
-        images=p.images or [],
+        images=images,
         category={"id": p.category.id if p.category else p.category_id, "name": p.category.name if p.category else "", "parent_id": p.category.parent_id if p.category else None},
         seller_id=p.seller_id,
         seller_info=seller_info,
         location=p.location or "",
-        attributes=p.attributes or {},
+        attributes=attributes,
         stock=p.stock or 1,
         is_featured=bool(p.is_featured),
         likes_count=p.likes_count or 0,
