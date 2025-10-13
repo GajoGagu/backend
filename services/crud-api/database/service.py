@@ -22,7 +22,7 @@ class DatabaseService:
         self.db = db
     
     # User operations
-    def create_user(self, email: str, password: str, name: str, phone: str, kakao_open_profile: str, role: str = "user") -> User:
+    def create_user(self, email: str, password: str, name: str, phone: str, kakao_open_profile: str, role: str = "user", address: str = None) -> User:
         user_id = str(uuid.uuid4())
         password_hash = pwd_context.hash(password)
         
@@ -33,7 +33,8 @@ class DatabaseService:
             name=name,
             phone=phone,
             kakao_open_profile=kakao_open_profile,
-            role=role
+            role=role,
+            address=address
         )
         self.db.add(user)
         self.db.commit()
@@ -315,53 +316,130 @@ class DatabaseService:
         # Create sample categories
         cat1 = Category(id="cat1", name="소파", parent_id=None)
         cat2 = Category(id="cat2", name="테이블", parent_id=None)
+        cat3 = Category(id="cat3", name="침대", parent_id=None)
+        cat4 = Category(id="cat4", name="의자", parent_id=None)
+        cat5 = Category(id="cat5", name="수납", parent_id=None)
+        
         self.db.add(cat1)
         self.db.add(cat2)
+        self.db.add(cat3)
+        self.db.add(cat4)
+        self.db.add(cat5)
         
-        # Create sample user
+        # Create sample users
         user1 = User(
             id="user1",
             email="test@example.com",
             password_hash=pwd_context.hash("password123"),
-            name="테스트 사용자"
+            name="테스트 사용자",
+            phone="010-1234-5678",
+            address="서울시 강남구 테헤란로 123",
+            kakao_open_profile="https://open.kakao.com/o/sample123"
         )
-        self.db.add(user1)
         
-        # Create sample product
+        user2 = User(
+            id="user2",
+            email="seller@example.com",
+            password_hash=pwd_context.hash("password123"),
+            name="판매자 김씨",
+            phone="010-9876-5432",
+            address="서울시 서초구 서초대로 456",
+            kakao_open_profile="https://open.kakao.com/o/seller123"
+        )
+        
+        self.db.add(user1)
+        self.db.add(user2)
+        
+        # Create sample products
+        import json
+        
+        # 소파
         product1 = Product(
             id="prod1",
             title="모던 소파 3인용",
             description="깔끔한 디자인의 3인용 소파입니다.",
             price_amount=450000,
             category_id="cat1",
-            seller_id="user1",
-            location={
-                "postcode": "12345",
-                "line1": "서울시 강남구",
-                "line2": "테헤란로 123",
-                "city": "서울",
-                "region": "강남구",
-                "country": "KR"
-            },
-            attributes={
+            seller_id="user2",
+            location="서울시 서초구 서초대로 456",
+            attributes=json.dumps({
                 "material": "가죽",
                 "style": "모던",
                 "color": "블랙",
                 "size": "3인용",
                 "condition": "like_new",
                 "tags": ["모던", "가죽", "3인용"]
-            },
-            images=[{
+            }),
+            images=json.dumps([{
                 "file_id": "img1",
                 "url": "https://example.com/sofa1.jpg",
                 "width": 800,
                 "height": 600
-            }],
+            }]),
             stock=1,
             is_featured=True,
             likes_count=15
         )
+        
+        # 테이블
+        product2 = Product(
+            id="prod2",
+            title="원목 식탁 4인용",
+            description="자연스러운 원목의 따뜻함을 느낄 수 있는 식탁입니다.",
+            price_amount=280000,
+            category_id="cat2",
+            seller_id="user2",
+            location="서울시 서초구 서초대로 456",
+            attributes=json.dumps({
+                "material": "원목",
+                "style": "내추럴",
+                "color": "내추럴",
+                "size": "4인용",
+                "condition": "good",
+                "tags": ["원목", "식탁", "4인용"]
+            }),
+            images=json.dumps([{
+                "file_id": "img2",
+                "url": "https://example.com/table1.jpg",
+                "width": 800,
+                "height": 600
+            }]),
+            stock=1,
+            is_featured=False,
+            likes_count=8
+        )
+        
+        # 의자
+        product3 = Product(
+            id="prod3",
+            title="인테리어 의자 2개",
+            description="세련된 디자인의 인테리어 의자 2개 세트입니다.",
+            price_amount=120000,
+            category_id="cat4",
+            seller_id="user1",
+            location="서울시 강남구 테헤란로 123",
+            attributes=json.dumps({
+                "material": "플라스틱",
+                "style": "모던",
+                "color": "화이트",
+                "size": "일반",
+                "condition": "excellent",
+                "tags": ["의자", "세트", "화이트"]
+            }),
+            images=json.dumps([{
+                "file_id": "img3",
+                "url": "https://example.com/chair1.jpg",
+                "width": 800,
+                "height": 600
+            }]),
+            stock=1,
+            is_featured=True,
+            likes_count=12
+        )
+        
         self.db.add(product1)
+        self.db.add(product2)
+        self.db.add(product3)
         
         self.db.commit()
     

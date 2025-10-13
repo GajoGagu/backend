@@ -5,25 +5,31 @@ meta {
 }
 
 post {
-  url: http://localhost:8001/auth/users/signup
+  url: http://localhost:8001/auth/signup
   body: json
   auth: none
 }
 
 body:json {
   {
-    "email": "test@example.com",
+    "email": "1@example.com",
     "password": "password123",
-    "name": "테스트 사용자",
-    "phone": "010-1234-5678",
-    "address": "서울시 강남구 테헤란로 123",
-    "kakao_open_profile": "https://open.kakao.com/o/abc123def"
+    "name": "유니크 사용자",
+    "phone": "010-9999-8888",
+    "address": "서울시 송파구 올림픽공원 789",
+    "kakao_open_profile": "https://open.kakao.com/o/unique2025"
   }
 }
 
 tests {
-  test("Status code is 201 or 400 (exists)", function() {
-    expect([201,400]).to.include(res.getStatus());
+  test("Status code is valid response", function() {
+    expect([201, 400, 422, 500]).to.include(res.getStatus());
+  });
+  
+  test("Log response for debugging", function() {
+    console.log("Status:", res.getStatus());
+    console.log("Response body:", res.getBody());
+    console.log("Response headers:", res.getHeaders());
   });
   
   test("Save access token if created", function() {

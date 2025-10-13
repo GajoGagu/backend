@@ -24,6 +24,7 @@ def signup(request: SignupRequest, db: Session = Depends(get_db)):
         phone=request.phone,
         kakao_open_profile=request.kakao_open_profile,
         role=request.role or "user",
+        address=request.address,
     )
 
     access_token = generate_token()

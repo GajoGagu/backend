@@ -9,7 +9,7 @@ class SignupRequest(BaseModel):
     name: str
     phone: str
     kakao_open_profile: str  # 카카오톡 오픈프로필 링크
-    address: Address
+    address: str  # 단순한 문자열 주소
     role: Optional[str] = "user"  # unified: user role, default to user
 
 
@@ -31,7 +31,7 @@ class User(BaseModel):
     email: str
     name: str
     phone: str
-    address: Address
+    address: str  # 단순한 문자열 주소
     kakao_open_profile: str
     created_at: str
 
@@ -53,7 +53,7 @@ class UpdateUserRequest(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     kakao_open_profile: Optional[str] = None
-    address: Optional[Address] = None
+    address: Optional[str] = None  # 단순한 문자열 주소
 
 
 class DeleteUserRequest(BaseModel):
