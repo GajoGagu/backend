@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from models import Product, ProductCreate, SellerInfo
+from models import Product, ProductCreate, ProductUpdate, SellerInfo
 from database.config import get_db
 from database.service import DatabaseService
 from auth import get_current_user
@@ -240,3 +240,132 @@ def get_product(product_id: str, db: Session = Depends(get_db)):
         likes_count=p.likes_count or 0,
         created_at=p.created_at.isoformat() if p.created_at else datetime.utcnow().isoformat(),
     )
+
+
+@router.put("/{product_id}", response_model=Product)
+def update_product(
+    product_id: str,
+    request: ProductUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    service = DatabaseService(db)
+    existing = service.get_product_by_id(product_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Authorization: only seller can update (admin role could be added later)
+    if existing.seller_id != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized to update this product")
+    
+    # Validate category if updating
+    if request.category_id:
+        category = service.get_category_by_id(request.category_id)
+        if not category:
+            raise HTTPException(status_code=400, detail="Invalid category")
+    
+    # Map image_file_ids to image entries
+    image_entries = None
+    if request.image_file_ids is not None:
+        image_entries = []
+        for fid in request.image_file_ids:
+            if fid.startswith("http://") or fid.startswith("https://"):
+                image_entries.append({"file_id": fid, "url": fid})
+            else:
+                base = os.getenv("S3_PUBLIC_BASE_URL", "")
+                url = f"{base}/{fid}" if base else fid
+                image_entries.append({"file_id": fid, "url": url})
+    
+    updates: Dict[str, Any] = {}
+    if request.title is not None:
+        updates["title"] = request.title
+    if request.description is not None:
+        updates["description"] = request.description
+    if request.price is not None:
+        if request.price.amount < 0:
+            raise HTTPException(status_code=422, detail="Invalid product data")
+        updates["price_amount"] = request.price.amount
+    if request.category_id is not None:
+        updates["category_id"] = request.category_id
+    if request.location is not None:
+        updates["location"] = request.location
+    if request.attributes is not None:
+        updates["attributes"] = request.attributes
+    if image_entries is not None:
+        updates["images"] = image_entries
+    if request.stock is not None:
+        updates["stock"] = request.stock
+    if request.is_featured is not None:
+        updates["is_featured"] = request.is_featured
+    
+    updated = service.update_product(product_id, updates)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # 판매자 정보 가져오기
+    seller_info = None
+    if updated.seller_id:
+        seller = service.get_user_by_id(updated.seller_id)
+        if seller:
+            seller_info = SellerInfo(
+                name=seller.name,
+                address=seller.address or "",
+                kakao_open_profile=seller.kakao_open_profile
+            )
+    
+    # Parse JSON fields for response
+    import json
+    images = []
+    if updated.images:
+        if isinstance(updated.images, str):
+            try:
+                images = json.loads(updated.images)
+            except:
+                images = []
+        else:
+            images = updated.images or []
+    
+    attributes = {}
+    if updated.attributes:
+        if isinstance(updated.attributes, str):
+            try:
+                attributes = json.loads(updated.attributes)
+            except:
+                attributes = {}
+        else:
+            attributes = updated.attributes or {}
+    
+    return Product(
+        id=updated.id,
+        title=updated.title,
+        description=updated.description,
+        price={"currency": updated.price_currency, "amount": updated.price_amount},
+        images=images,
+        category={"id": updated.category.id if updated.category else updated.category_id, "name": updated.category.name if updated.category else "", "parent_id": updated.category.parent_id if updated.category else None},
+        seller_id=updated.seller_id,
+        seller_info=seller_info,
+        location=updated.location or "",
+        attributes=attributes,
+        stock=updated.stock or 1,
+        is_featured=bool(updated.is_featured),
+        likes_count=updated.likes_count or 0,
+        created_at=updated.created_at.isoformat() if updated.created_at else datetime.utcnow().isoformat(),
+    )
+
+
+@router.delete("/{product_id}")
+def delete_product(
+    product_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    service = DatabaseService(db)
+    existing = service.get_product_by_id(product_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Product not found")
+    if existing.seller_id != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this product")
+    ok = service.delete_product(product_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Product deleted"}

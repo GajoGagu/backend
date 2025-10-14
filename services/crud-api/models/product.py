@@ -48,3 +48,15 @@ class ProductCreate(BaseModel):
     location: str  # 단순한 문자열 주소
     attributes: Dict[str, Any] = {}
     image_file_ids: List[str] = []
+
+
+class ProductUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[Money] = None
+    category_id: Optional[str] = None
+    location: Optional[str] = None  # 단순한 문자열 주소
+    attributes: Optional[Dict[str, Any]] = None
+    image_file_ids: Optional[List[str]] = None
+    stock: Optional[int] = None
+    is_featured: Optional[bool] = None

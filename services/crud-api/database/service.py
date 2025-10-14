@@ -127,6 +127,43 @@ class DatabaseService:
         self.db.refresh(product)
         return product
     
+    def update_product(self, product_id: str, updates: Dict[str, Any]) -> Optional[Product]:
+        product = self.get_product_by_id(product_id)
+        if not product:
+            return None
+        
+        # Simple field updates
+        if "title" in updates and updates["title"] is not None:
+            product.title = updates["title"]
+        if "description" in updates and updates["description"] is not None:
+            product.description = updates["description"]
+        if "price_amount" in updates and updates["price_amount"] is not None:
+            product.price_amount = updates["price_amount"]
+        if "category_id" in updates and updates["category_id"] is not None:
+            product.category_id = updates["category_id"]
+        if "location" in updates and updates["location"] is not None:
+            product.location = updates["location"]
+        if "attributes" in updates and updates["attributes"] is not None:
+            product.attributes = updates["attributes"]
+        if "images" in updates and updates["images"] is not None:
+            product.images = updates["images"]
+        if "stock" in updates and updates["stock"] is not None:
+            product.stock = updates["stock"]
+        if "is_featured" in updates and updates["is_featured"] is not None:
+            product.is_featured = updates["is_featured"]
+        
+        self.db.commit()
+        self.db.refresh(product)
+        return product
+
+    def delete_product(self, product_id: str) -> bool:
+        product = self.get_product_by_id(product_id)
+        if not product:
+            return False
+        self.db.delete(product)
+        self.db.commit()
+        return True
+    
     # Wishlist operations
     def add_to_wishlist(self, user_id: str, product_id: str) -> WishlistItem:
         # Check if already in wishlist
