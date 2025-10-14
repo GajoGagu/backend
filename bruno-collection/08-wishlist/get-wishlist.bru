@@ -19,14 +19,22 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
   
-  test("Response is an array", function() {
-    expect(res.getBody()).to.be.an('array');
+  test("Response is an object with items array", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody()).to.have.property('items');
+    expect(res.getBody().items).to.be.an('array');
+  });
+  
+  test("Response has pagination info", function() {
+    expect(res.getBody()).to.have.property('page');
+    expect(res.getBody()).to.have.property('page_size');
+    expect(res.getBody()).to.have.property('total');
   });
   
   test("Wishlist items have product details", function() {
-    if (res.getBody().length > 0) {
-      expect(res.getBody()[0]).to.have.property('product');
-      expect(res.getBody()[0].product).to.have.property('title');
+    if (res.getBody().items.length > 0) {
+      expect(res.getBody().items[0]).to.have.property('product');
+      expect(res.getBody().items[0].product).to.have.property('title');
     }
   });
 }

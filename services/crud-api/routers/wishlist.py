@@ -1,7 +1,7 @@
 from typing import Dict, Any, List
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from models import Product
+from models import Product, WishlistItemRequest, WishlistResponse
 from database.config import get_db
 from database.service import DatabaseService
 from auth import get_current_user
@@ -9,7 +9,7 @@ from auth import get_current_user
 router = APIRouter(prefix="/wishlist", tags=["wishlist"])
 
 
-@router.get("", response_model=Dict[str, Any])
+@router.get("", response_model=WishlistResponse)
 def get_wishlist(
     current_user: dict = Depends(get_current_user),
     page: int = 1,
@@ -41,27 +41,29 @@ def get_wishlist(
             created_at=p.created_at.isoformat() if p.created_at else "",
         )
 
-    return {
-        "items": [
+    return WishlistResponse(
+        items=[
             {
                 "product": to_api_product(w.product),
                 "created_at": w.created_at.isoformat() if getattr(w, "created_at", None) else "",
             }
             for w in paginated if w.product is not None
         ],
-        "page": page,
-        "page_size": page_size,
-        "total": len(items)
-    }
+        page=page,
+        page_size=page_size,
+        total=len(items)
+    )
 
 
-@router.post("/items", response_model=Dict[str, Any])
+@router.post("/items", response_model=WishlistResponse)
 def add_to_wishlist(
-    product_id: str,
+    request: WishlistItemRequest,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     service = DatabaseService(db)
+    product_id = request.product_id
+    
     product = service.get_product_by_id(product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -69,13 +71,15 @@ def add_to_wishlist(
     return get_wishlist(current_user, db=db)
 
 
-@router.delete("/items", status_code=200)
+@router.delete("/items", response_model=WishlistResponse, status_code=200)
 def remove_from_wishlist(
-    product_id: str,
+    request: WishlistItemRequest,
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     service = DatabaseService(db)
+    product_id = request.product_id
+    
     removed = service.remove_from_wishlist(current_user["id"], product_id)
     if not removed:
         raise HTTPException(status_code=404, detail="Item not found in wishlist")

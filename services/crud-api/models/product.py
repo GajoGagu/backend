@@ -60,3 +60,19 @@ class ProductUpdate(BaseModel):
     image_file_ids: Optional[List[str]] = None
     stock: Optional[int] = None
     is_featured: Optional[bool] = None
+
+
+class WishlistItemRequest(BaseModel):
+    product_id: str
+
+
+class WishlistItem(BaseModel):
+    product: Product
+    created_at: str
+
+
+class WishlistResponse(BaseModel):
+    items: List[WishlistItem]
+    page: int
+    page_size: int
+    total: int
