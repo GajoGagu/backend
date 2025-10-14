@@ -1,0 +1,32 @@
+meta {
+  name: Start Shipping (Seller)
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:8001/orders/{{order_id}}/seller-status
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "status": "shipping"
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has updated order", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody().status).to.equal("shipping");
+  });
+}

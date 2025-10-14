@@ -1,11 +1,11 @@
 meta {
-  name: Complete Order
+  name: Confirm Payment (Seller)
   type: http
-  seq: 4
+  seq: 2
 }
 
 put {
-  url: http://localhost:8001/orders/{{order_id}}/status
+  url: http://localhost:8001/orders/{{order_id}}/seller-status
   body: json
   auth: bearer
 }
@@ -16,7 +16,7 @@ auth:bearer {
 
 body:json {
   {
-    "status": "completed"
+    "status": "paid"
   }
 }
 
@@ -25,8 +25,8 @@ tests {
     expect(res.getStatus()).to.equal(200);
   });
   
-  test("Response has completed order", function() {
+  test("Response has updated order", function() {
     expect(res.getBody()).to.be.an('object');
-    expect(res.getBody().status).to.equal("completed");
+    expect(res.getBody().status).to.equal("paid");
   });
 }

@@ -7,6 +7,7 @@ from routers import (
     health_router, auth_router, users_router,
     products_router, wishlist_router, orders_router
 )
+from routers.orders_seller import router as orders_seller_router
 from routers.notifications import router as notifications_router
 from routers.uploads import router as uploads_router
 from routers.rider import router as rider_router
@@ -34,6 +35,7 @@ app.include_router(users_router)
 app.include_router(products_router)
 app.include_router(wishlist_router)
 app.include_router(orders_router)
+app.include_router(orders_seller_router)
 app.include_router(notifications_router)
 app.include_router(uploads_router)
 app.include_router(rider_router)

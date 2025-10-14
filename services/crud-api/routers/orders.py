@@ -131,6 +131,46 @@ def get_orders(
     return orders
 
 
+@router.get("/seller", response_model=List[Order])
+def get_seller_orders(
+    current_user: dict = Depends(get_current_user),
+    page: int = 1,
+    page_size: int = 20,
+    db: Session = Depends(get_db)
+):
+    """판매자가 자신의 상품에 대한 주문 목록 조회"""
+    service = DatabaseService(db)
+    from database.models import Order as OrderModel, OrderItem as OrderItemModel, Product as ProductModel
+    
+    # 현재 사용자의 상품들에 대한 주문만 조회
+    subquery = db.query(OrderItemModel.order_id).join(
+        ProductModel, OrderItemModel.product_id == ProductModel.id
+    ).filter(ProductModel.seller_id == current_user["id"]).subquery()
+    
+    q = db.query(OrderModel).filter(
+        OrderModel.id.in_(subquery)
+    ).order_by(OrderModel.created_at.desc())
+    
+    rows = q.offset((page - 1) * page_size).limit(page_size).all()
+
+    orders: List[Order] = []
+    for r in rows:
+        items = db.query(OrderItemModel).filter(OrderItemModel.order_id == r.id).all()
+        orders.append(Order(
+            id=r.id,
+            user_id=r.user_id,
+            status=r.status,
+            items=[{"product_id": it.product_id, "quantity": it.quantity, "price": it.price} for it in items],
+            total_amount=r.total_amount,
+            shipping_fee=0,  # not stored; computed earlier
+            shipping_address=r.shipping_address,
+            delivery_type=r.delivery_type,
+            created_at=r.created_at.isoformat() if r.created_at else "",
+            updated_at=r.updated_at.isoformat() if r.updated_at else "",
+        ))
+    return orders
+
+
 @router.get("/{order_id}", response_model=Order)
 def get_order(
     order_id: str,
@@ -166,25 +206,24 @@ def update_order_status(
     db: Session = Depends(get_db)
 ):
     from database.models import Order as OrderModel, OrderItem as OrderItemModel
+    service = DatabaseService(db)
+    
     r = db.query(OrderModel).filter(OrderModel.id == order_id).first()
     if not r:
         raise HTTPException(status_code=404, detail="Order not found")
     if r.user_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    # 주문 상태 유효성 검사
-    valid_statuses = ["pending", "paid", "shipping", "completed", "cancelled"]
-    if request.status not in valid_statuses:
-        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    # 주문 상태 유효성 검사 (구매자는 pending, cancelled만 가능)
+    valid_buyer_statuses = ["pending", "cancelled"]
+    if request.status not in valid_buyer_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Buyer can only set: {valid_buyer_statuses}")
     
     r.status = request.status
     db.commit()
     
     # 주문 상태 변경 시 구매자에게 알림 전송
     status_messages = {
-        "paid": "결제가 확인되었습니다!",
-        "shipping": "배송이 시작되었습니다!",
-        "completed": "구매가 완료되었습니다!",
         "cancelled": "주문이 취소되었습니다."
     }
     

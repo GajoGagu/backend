@@ -1,0 +1,32 @@
+meta {
+  name: Cancel Order (Buyer)
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8001/orders/{{order_id}}/status
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "status": "cancelled"
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has cancelled order", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody().status).to.equal("cancelled");
+  });
+}

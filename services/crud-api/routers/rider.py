@@ -22,10 +22,6 @@ def get_available_orders_for_delivery(
     """배송 가능한 주문 목록 조회 (라이더용)"""
     service = DatabaseService(db)
     
-    # 라이더 권한 확인 (role이 rider인지 확인)
-    if current_user.get("role") != "rider":
-        raise HTTPException(status_code=403, detail="Only riders can access this endpoint")
-    
     orders = service.get_available_orders_for_delivery()
     order_details = []
     
@@ -103,10 +99,6 @@ def create_delivery_request(
     """라이더 배송 신청"""
     service = DatabaseService(db)
     
-    # 라이더 권한 확인
-    if current_user.get("role") != "rider":
-        raise HTTPException(status_code=403, detail="Only riders can create delivery requests")
-    
     try:
         delivery = service.create_rider_delivery(
             order_id=request.order_id,
@@ -171,10 +163,6 @@ def get_my_deliveries(
     """내 배송 신청 목록 조회"""
     service = DatabaseService(db)
     
-    # 라이더 권한 확인
-    if current_user.get("role") != "rider":
-        raise HTTPException(status_code=403, detail="Only riders can access this endpoint")
-    
     deliveries = service.get_rider_deliveries(current_user["id"])
     
     delivery_responses = []
@@ -229,10 +217,6 @@ def update_delivery_status(
 ):
     """배송 상태 업데이트"""
     service = DatabaseService(db)
-    
-    # 라이더 권한 확인
-    if current_user.get("role") != "rider":
-        raise HTTPException(status_code=403, detail="Only riders can update delivery status")
     
     # 배송 신청이 해당 라이더의 것인지 확인
     delivery = service.get_rider_delivery_by_id(delivery_id)
