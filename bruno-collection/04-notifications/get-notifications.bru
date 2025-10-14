@@ -1,0 +1,50 @@
+meta {
+  name: Get Notifications
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8001/notifications?skip=0&limit=20
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response shape is NotificationListResponse", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody()).to.have.property('notifications');
+    expect(res.getBody()).to.have.property('total');
+    expect(res.getBody()).to.have.property('unread_count');
+    expect(res.getBody().notifications).to.be.an('array');
+  });
+  
+  test("Notification items have required fields", function() {
+    if (res.getBody().notifications.length > 0) {
+      const n = res.getBody().notifications[0];
+      expect(n).to.have.property('id');
+      expect(n).to.have.property('title');
+      expect(n).to.have.property('message');
+      expect(n).to.have.property('type');
+      expect(n).to.have.property('is_read');
+      expect(n).to.have.property('created_at');
+    }
+  });
+  
+  test("Save first unread id and list for mark-as-read", function() {
+    const list = res.getBody().notifications || [];
+    const unread = list.filter(n => !n.is_read);
+    if (unread.length > 0) {
+      bru.setVar('unread_notification_id', unread[0].id);
+      bru.setVar('notification_ids_json', JSON.stringify(unread.map(n => n.id)));
+    }
+  });
+}

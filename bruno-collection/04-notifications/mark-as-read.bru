@@ -1,0 +1,33 @@
+meta {
+  name: Mark Notifications As Read
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8001/notifications/mark-as-read
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "notification_ids": ["{{unread_notification_id}}"]
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has updated_count", function() {
+    expect(res.getBody()).to.be.an('object');
+    expect(res.getBody()).to.have.property('updated_count');
+    expect(res.getBody().updated_count).to.be.a('number');
+  });
+}
