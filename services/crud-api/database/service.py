@@ -350,18 +350,20 @@ class DatabaseService:
         if self.db.query(Category).first():
             return
         
-        # Create sample categories
-        cat1 = Category(id="cat1", name="소파", parent_id=None)
-        cat2 = Category(id="cat2", name="테이블", parent_id=None)
-        cat3 = Category(id="cat3", name="침대", parent_id=None)
-        cat4 = Category(id="cat4", name="의자", parent_id=None)
-        cat5 = Category(id="cat5", name="수납", parent_id=None)
+        # Create sample categories - 6 categories only as specified: 침대/책상/의자/수납/가전/기타
+        cat1 = Category(id="cat1", name="침대", parent_id=None)
+        cat2 = Category(id="cat2", name="책상", parent_id=None)
+        cat3 = Category(id="cat3", name="의자", parent_id=None)
+        cat4 = Category(id="cat4", name="수납", parent_id=None)
+        cat5 = Category(id="cat5", name="가전", parent_id=None)
+        cat6 = Category(id="cat6", name="기타", parent_id=None)
         
         self.db.add(cat1)
         self.db.add(cat2)
         self.db.add(cat3)
         self.db.add(cat4)
         self.db.add(cat5)
+        self.db.add(cat6)
         
         # Create sample users
         user1 = User(
@@ -390,26 +392,26 @@ class DatabaseService:
         # Create sample products
         import json
         
-        # 소파
+        # 침대 (cat1)
         product1 = Product(
             id="prod1",
-            title="모던 소파 3인용",
-            description="깔끔한 디자인의 3인용 소파입니다.",
-            price_amount=450000,
+            title="프리미엄 퀸 사이즈 침대",
+            description="편안한 숙면을 위한 고급 퀸 사이즈 침대입니다.",
+            price_amount=550000,
             category_id="cat1",
             seller_id="user2",
             location="서울시 서초구 서초대로 456",
             attributes=json.dumps({
-                "material": "가죽",
+                "material": "원목",
                 "style": "모던",
-                "color": "블랙",
-                "size": "3인용",
+                "color": "브라운",
+                "size": "퀸",
                 "condition": "like_new",
-                "tags": ["모던", "가죽", "3인용"]
+                "tags": ["퀸사이즈", "침대", "원목"]
             }),
             images=json.dumps([{
                 "file_id": "img1",
-                "url": "https://example.com/sofa1.jpg",
+                "url": "https://example.com/bed1.jpg",
                 "width": 800,
                 "height": 600
             }]),
@@ -418,26 +420,26 @@ class DatabaseService:
             likes_count=15
         )
         
-        # 테이블
+        # 책상 (cat2)
         product2 = Product(
             id="prod2",
-            title="원목 식탁 4인용",
-            description="자연스러운 원목의 따뜻함을 느낄 수 있는 식탁입니다.",
-            price_amount=280000,
+            title="컴퓨터 책상 1인용",
+            description="깔끔한 디자인의 인테리어 책상입니다.",
+            price_amount=180000,
             category_id="cat2",
             seller_id="user2",
             location="서울시 서초구 서초대로 456",
             attributes=json.dumps({
                 "material": "원목",
                 "style": "내추럴",
-                "color": "내추럴",
-                "size": "4인용",
+                "color": "화이트",
+                "size": "1인용",
                 "condition": "good",
-                "tags": ["원목", "식탁", "4인용"]
+                "tags": ["책상", "컴퓨터", "1인용"]
             }),
             images=json.dumps([{
                 "file_id": "img2",
-                "url": "https://example.com/table1.jpg",
+                "url": "https://example.com/desk1.jpg",
                 "width": 800,
                 "height": 600
             }]),
@@ -446,22 +448,22 @@ class DatabaseService:
             likes_count=8
         )
         
-        # 의자
+        # 의자 (cat3)
         product3 = Product(
             id="prod3",
-            title="인테리어 의자 2개",
-            description="세련된 디자인의 인테리어 의자 2개 세트입니다.",
-            price_amount=120000,
-            category_id="cat4",
+            title="인체공학 사무용 의자",
+            description="장시간 앉아도 편안한 인체공학 디자인의 의자입니다.",
+            price_amount=220000,
+            category_id="cat3",
             seller_id="user1",
             location="서울시 강남구 테헤란로 123",
             attributes=json.dumps({
-                "material": "플라스틱",
+                "material": "메시",
                 "style": "모던",
-                "color": "화이트",
+                "color": "블랙",
                 "size": "일반",
                 "condition": "excellent",
-                "tags": ["의자", "세트", "화이트"]
+                "tags": ["사무용", "인체공학", "메시"]
             }),
             images=json.dumps([{
                 "file_id": "img3",
@@ -474,9 +476,96 @@ class DatabaseService:
             likes_count=12
         )
         
+        # 수납 (cat4)
+        product4 = Product(
+            id="prod4",
+            title="4단 서랍장",
+            description="깔끔한 디자인의 실용적인 서랍장입니다.",
+            price_amount=150000,
+            category_id="cat4",
+            seller_id="user2",
+            location="서울시 서초구 서초대로 456",
+            attributes=json.dumps({
+                "material": "원목",
+                "style": "북유럽",
+                "color": "오크",
+                "size": "4단",
+                "condition": "good",
+                "tags": ["서랍장", "수납", "원목"]
+            }),
+            images=json.dumps([{
+                "file_id": "img4",
+                "url": "https://example.com/storage1.jpg",
+                "width": 800,
+                "height": 600
+            }]),
+            stock=1,
+            is_featured=False,
+            likes_count=5
+        )
+        
+        # 가전 (cat5)
+        product5 = Product(
+            id="prod5",
+            title="스탠드형 선풍기",
+            description="강력한 바람세기와 저소음의 스탠드형 선풍기입니다.",
+            price_amount=80000,
+            category_id="cat5",
+            seller_id="user1",
+            location="서울시 강남구 테헤란로 123",
+            attributes=json.dumps({
+                "material": "플라스틱",
+                "style": "모던",
+                "color": "화이트",
+                "size": "14인치",
+                "condition": "like_new",
+                "tags": ["선풍기", "가전", "여름"]
+            }),
+            images=json.dumps([{
+                "file_id": "img5",
+                "url": "https://example.com/appliance1.jpg",
+                "width": 800,
+                "height": 600
+            }]),
+            stock=1,
+            is_featured=True,
+            likes_count=9
+        )
+        
+        # 기타 (cat6)
+        product6 = Product(
+            id="prod6",
+            title="우드 월 시계",
+            description="심플한 디자인의 원목 벽걸이 시계입니다.",
+            price_amount=45000,
+            category_id="cat6",
+            seller_id="user2",
+            location="서울시 서초구 서초대로 456",
+            attributes=json.dumps({
+                "material": "원목",
+                "style": "내추럴",
+                "color": "내추럴",
+                "size": "30cm",
+                "condition": "excellent",
+                "tags": ["시계", "인테리어", "원목"]
+            }),
+            images=json.dumps([{
+                "file_id": "img6",
+                "url": "https://example.com/other1.jpg",
+                "width": 800,
+                "height": 600
+            }]),
+            stock=2,
+            is_featured=False,
+            likes_count=3
+        )
+
         self.db.add(product1)
         self.db.add(product2)
         self.db.add(product3)
+        self.db.add(product4)
+        self.db.add(product5)
+        self.db.add(product6)
         
         self.db.commit()
     
