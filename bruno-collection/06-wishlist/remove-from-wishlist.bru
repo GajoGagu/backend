@@ -22,6 +22,19 @@ body:json {
 
 tests {
   test("Status code is 200", function() {
+    // Pydantic 버그가 발생하면 422 또는 500 오류가 났었음
     expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Item is removed from the returned list", function() {
+    const reqBody = req.getBody();
+    const body = res.getBody();
+    const removedProductId = reqBody.product_id;
+
+    expect(body).to.be.an('object');
+    expect(body.items).to.be.an('array');
+
+    const item = body.items.find(i => i.product.id === removedProductId);
+    expect(item).to.not.exist;
   });
 }

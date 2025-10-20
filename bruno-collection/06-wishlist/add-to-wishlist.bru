@@ -21,7 +21,27 @@ body:json {
 }
 
 tests {
-  test("Status code is 200 or 201", function() {
-    expect([200,201]).to.include(res.getStatus());
+  test("Status code is 200", function() {
+    // Pydantic 버그가 발생하면 422 또는 500 오류가 났었음
+    // openapi 명세상 200 OK를 반환해야 함
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("[버그 검증] 반환된 product의 images/attributes 타입 검사", function() {
+    const reqBody = req.getBody();
+    const body = res.getBody();
+    const addedProductId = reqBody.product_id;
+    
+    expect(body).to.be.an('object');
+    expect(body.items).to.be.an('array');
+    
+    const item = body.items.find(i => i.product.id === addedProductId);
+    expect(item).to.exist;
+    
+    // Pydantic 버그가 해결되었다면, 이 값들은 더 이상 string이 아니어야 함
+    if (item) {
+      expect(item.product.images).to.be.an('array', 'images 필드가 string이 아닌 array여야 합니다.');
+      expect(item.product.attributes).to.be.an('object', 'attributes 필드가 string이 아닌 object여야 합니다.');
+    }
   });
 }

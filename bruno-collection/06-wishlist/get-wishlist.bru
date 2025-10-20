@@ -18,23 +18,30 @@ tests {
   test("Status code is 200", function() {
     expect(res.getStatus()).to.equal(200);
   });
-  
+
   test("Response is an object with items array", function() {
-    expect(res.getBody()).to.be.an('object');
-    expect(res.getBody()).to.have.property('items');
-    expect(res.getBody().items).to.be.an('array');
+    const body = res.getBody();
+    expect(body).to.be.an('object');
+    expect(body).to.have.property('items');
+    expect(body.items).to.be.an('array');
   });
-  
+
   test("Response has pagination info", function() {
-    expect(res.getBody()).to.have.property('page');
-    expect(res.getBody()).to.have.property('page_size');
-    expect(res.getBody()).to.have.property('total');
+    const body = res.getBody();
+    expect(body).to.have.property('page');
+    expect(body).to.have.property('page_size');
+    expect(body).to.have.property('total');
   });
-  
-  test("Wishlist items have product details", function() {
-    if (res.getBody().items.length > 0) {
-      expect(res.getBody().items[0]).to.have.property('product');
-      expect(res.getBody().items[0].product).to.have.property('title');
+
+  test("[버그 검증] Product images/attributes 타입 검사", function() {
+    const body = res.getBody();
+    if (body.items.length > 0) {
+      const firstProduct = body.items[0].product;
+      expect(firstProduct).to.have.property('product');
+      
+      // Pydantic 버그가 해결되었다면, 이 값들은 더 이상 string이 아니어야 함
+      expect(firstProduct.images).to.be.an('array', 'images 필드가 string이 아닌 array여야 합니다.');
+      expect(firstProduct.attributes).to.be.an('object', 'attributes 필드가 string이 아닌 object여야 합니다.');
     }
   });
 }

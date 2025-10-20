@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Dict, List, Optional, Any
+import json
 from .base import Money, Address
 
 
@@ -38,6 +39,28 @@ class Product(BaseModel):
     is_featured: bool = False
     likes_count: int = 0
     created_at: str
+    
+    @field_validator('images', mode='before')
+    @classmethod
+    def parse_images(cls, v):
+        """문자열로 저장된 이미지 정보를 파싱합니다."""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return []
+        return v
+    
+    @field_validator('attributes', mode='before')
+    @classmethod
+    def parse_attributes(cls, v):
+        """문자열로 저장된 속성 정보를 파싱합니다."""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return {}
+        return v
 
 
 class ProductCreate(BaseModel):
