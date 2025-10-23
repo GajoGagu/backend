@@ -148,3 +148,7 @@ class RiderDelivery(Base):
     # Relationships
     order = relationship("Order", back_populates="rider_deliveries")
     rider = relationship("User", foreign_keys=[rider_id])
+
+
+# Ad 클래스는 더 이상 사용하지 않습니다.
+# 광고는 서버에서 고정된 목록을 제공하므로 데이터베이스 모델이 필요하지 않습니다.

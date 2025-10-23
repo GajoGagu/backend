@@ -567,6 +567,9 @@ class DatabaseService:
         self.db.add(product5)
         self.db.add(product6)
         
+        # 광고 관련 코드는 제거했습니다.
+        # 광고는 서버에서 고정된 목록을 제공하므로 데이터베이스에 저장할 필요가 없습니다.
+        
         self.db.commit()
     
     # Rider operations
@@ -666,3 +669,7 @@ class DatabaseService:
         return self.db.query(RiderDelivery).filter(
             RiderDelivery.order_id == order_id
         ).order_by(RiderDelivery.created_at.desc()).all()
+    
+    # Ad operations
+    # Ad 관련 메서드는 제거되었습니다.
+    # 광고는 서버에서 고정된 목록을 제공하므로 데이터베이스 관련 메서드가 필요하지 않습니다.
